@@ -418,12 +418,6 @@ if (!isset($footerSettings)) {
   });
 </script>
 
-<!-- ElevenLabs widget script -->
-<script 
-    src="https://unpkg.com/@elevenlabs/convai-widget-embed" 
-    async 
-    type="text/javascript">
-</script>
 
 <!-- Embedded Cookie preferences check -->
 <?php

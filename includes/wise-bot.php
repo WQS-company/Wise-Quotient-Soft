@@ -958,24 +958,6 @@ if (!function_exists('formatChatMessage')) {
           <input type="file" id="file-input" style="display: none" accept="image/*,application/pdf" />
         </div>
         <div class="chat-option-btnts">
-          <!-- Voice Wave Animation -->
-          <div class="voice-wave-container" id="voiceWave">
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-            <div class="voice-wave-bar"></div>
-          </div>
-          <!-- Speaker Toggle -->
-          <button id="speakerToggle" class="chat-icon" title="Toggle Voice Response">
-            <i class="fas fa-volume-up"></i>
-          </button>
-          <!-- Microphone Icon -->
-          <button id="voiceBtn" class="chat-icon voice-btn" title="Voice Message">
-            <i class="fas fa-microphone"></i>
-          </button>
           <!-- Call Button -->
           <button id="callBtn" class="chat-icon call-btn" title="Voice Call">
             <i class="fas fa-phone"></i>
