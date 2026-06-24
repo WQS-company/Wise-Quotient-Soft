@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <linearGradient id="vtuGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A2D5E"/>
+      <stop offset="100%" stop-color="#1e4b8a"/>
+    </linearGradient>
+    <linearGradient id="vtuGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6600"/>
+      <stop offset="100%" stop-color="#ff9933"/>
+    </linearGradient>
+    <linearGradient id="vtuGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="vtuGrad4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <filter id="vtuShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0A2D5E" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background decorative circle -->
+  <circle cx="200" cy="200" r="180" fill="url(#vtuGrad1)" opacity="0.03"/>
+  <circle cx="200" cy="200" r="140" fill="url(#vtuGrad1)" opacity="0.04"/>
+  <circle cx="200" cy="180" r="100" fill="url(#vtuGrad2)" opacity="0.04"/>
+
+  <!-- Floating network signal waves -->
+  <path d="M80 100 Q85 85 90 100" stroke="#ff6600" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.3"/>
+  <path d="M72 108 Q80 85 88 108" stroke="#ff6600" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.2"/>
+  <path d="M64 116 Q76 85 88 116" stroke="#ff6600" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.12"/>
+
+  <!-- Phone body -->
+  <rect x="145" y="65" width="110" height="270" rx="24" fill="url(#vtuGrad1)" filter="url(#vtuShadow)"/>
+  <rect x="150" y="70" width="100" height="260" rx="20" fill="#0f172a"/>
+  
+  <!-- Phone screen content -->
+  <rect x="155" y="75" width="90" height="250" rx="16" fill="#ffffff"/>
+  
+  <!-- Status bar -->
+  <rect x="155" y="75" width="90" height="24" rx="16" fill="url(#vtuGrad1)"/>
+  <rect x="155" y="91" width="90" height="8" fill="url(#vtuGrad1)"/>
+  <circle cx="178" cy="87" r="4" fill="#ff6600"/>
+  <rect x="195" y="85" width="18" height="4" rx="2" fill="rgba(255,255,255,0.6)"/>
+  <rect x="216" y="85" width="10" height="4" rx="2" fill="rgba(255,255,255,0.4)"/>
+
+  <!-- Service icons on screen -->
+  <rect x="165" y="104" width="70" height="1" fill="#e2e8f0"/>
+  
+  <!-- Airtime icon -->
+  <rect x="162" y="110" width="32" height="32" rx="8" fill="rgba(255,102,0,0.1)"/>
+  <path d="M172 120 L178 132 L168 132 Z" fill="#ff6600" stroke="#ff6600" stroke-width="1.5" stroke-linejoin="round"/>
+  <rect x="162" y="122" width="32" height="2" rx="1" fill="#ff6600" opacity="0.3"/>
+
+  <!-- Data icon -->
+  <rect x="200" y="110" width="32" height="32" rx="8" fill="rgba(16,185,129,0.1)"/>
+  <rect x="206" y="116" width="20" height="6" rx="2" fill="#10b981"/>
+  <rect x="206" y="124" width="14" height="6" rx="2" fill="#10b981"/>
+  <rect x="206" y="132" width="8" height="6" rx="2" fill="#10b981"/>
+
+  <!-- Bill payment icon -->
+  <rect x="162" y="148" width="32" height="32" rx="8" fill="rgba(99,102,241,0.1)"/>
+  <rect x="168" y="156" width="20" height="16" rx="3" fill="#6366f1" stroke="#6366f1" stroke-width="1.5"/>
+  <rect x="170" y="158" width="16" height="2" rx="1" fill="#fff"/>
+  <rect x="170" y="162" width="16" height="2" rx="1" fill="#fff"/>
+  <rect x="170" y="166" width="10" height="2" rx="1" fill="#fff"/>
+
+  <!-- Cable TV icon -->
+  <rect x="200" y="148" width="32" height="32" rx="8" fill="rgba(245,158,11,0.1)"/>
+  <rect x="208" y="156" width="16" height="12" rx="3" fill="#f59e0b"/>
+  <path d="M206 170 L226 170" stroke="#f59e0b" stroke-width="1.5"/>
+  <circle cx="216" cy="164" r="2" fill="#fff"/>
+
+  <!-- Recharge input -->
+  <rect x="165" y="190" width="70" height="1" fill="#e2e8f0"/>
+  <rect x="165" y="196" width="70" height="28" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="172" y="214" font-family="monospace" font-size="8" fill="#94a3b8">Enter phone number</text>
+  
+  <!-- Amount display -->
+  <rect x="165" y="230" width="70" height="28" rx="8" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="1"/>
+  <text x="172" y="248" font-family="monospace" font-size="10" font-weight="700" fill="#10b981">₦ 1,000.00</text>
+
+  <!-- Buy button -->
+  <rect x="165" y="264" width="70" height="32" rx="10" fill="url(#vtuGrad2)"/>
+  <text x="200" y="285" font-family="monospace" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">Buy Now</text>
+
+  <!-- Success message -->
+  <rect x="165" y="302" width="70" height="18" rx="6" fill="rgba(16,185,129,0.08)"/>
+  <circle cx="174" cy="311" r="4" fill="#10b981"/>
+  <text x="182" y="314" font-family="monospace" font-size="7" fill="#10b981" font-weight="600">Success!</text>
+
+  <!-- Phone home button -->
+  <circle cx="200" cy="330" r="5" fill="none" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- Floating decorative elements -->
+  <circle cx="310" cy="140" r="6" fill="url(#vtuGrad2)" opacity="0.15"/>
+  <circle cx="330" cy="180" r="4" fill="url(#vtuGrad1)" opacity="0.12"/>
+  <circle cx="70" cy="250" r="5" fill="url(#vtuGrad2)" opacity="0.1"/>
+  
+  <!-- Small coin/decorative icons -->
+  <circle cx="320" cy="300" r="12" fill="url(#vtuGrad2)" opacity="0.08"/>
+  <text x="316" y="304" font-family="sans-serif" font-size="10" fill="#ff6600" opacity="0.4">₦</text>
+  <circle cx="80" cy="150" r="10" fill="url(#vtuGrad1)" opacity="0.06"/>
+  <text x="76" y="154" font-family="sans-serif" font-size="8" fill="#0A2D5E" opacity="0.3">📱</text>
+</svg>

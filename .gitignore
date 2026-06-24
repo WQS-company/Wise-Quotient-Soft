@@ -1,0 +1,36 @@
+# WQS Gitignore
+
+# Environment files
+.env
+
+# Credentials and sensitive configurations
+config.php
+firebase-service-account.json
+firebase_config.php
+
+# Log files
+*.log
+logs/
+bot_errors.log
+
+# Database dumps and install scripts
+*.sql
+Database/*.sql
+dump_schema.php
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.rar
+wqs.zip
+
+# IDEs and scratch
+.vscode/
+.idea/
+scratch/
+test.txt
+test_api.php
+
+# Uploads and temporary files
+uploads/

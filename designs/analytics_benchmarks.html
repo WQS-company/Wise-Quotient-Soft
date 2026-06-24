@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prototype — Analytics & Benchmarks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-8">
+  <div class="max-w-5xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold">Analytics — Trends & Benchmarks</h1>
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 text-sm"><input id="benchToggle" type="checkbox" class="rounded"> Show Benchmark</label>
+      </div>
+    </header>
+
+    <section class="bg-white/5 p-4 rounded-lg shadow-md">
+      <canvas id="trendChart" height="160"></canvas>
+      <div id="insight" class="mt-4 bg-indigo-600/20 p-3 rounded">Key insight: revenue up 12% vs last period</div>
+    </section>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('trendChart');
+    const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul'];
+    const data = {
+      labels,
+      datasets: [{ label:'Revenue', data:[120,140,150,170,200,220,250], borderColor:'#10B981', backgroundColor:'rgba(16,185,129,0.08)', tension:0.3 }]
+    };
+    const config = { type:'line', data, options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#e6eef8' } } }, scales:{ x:{ ticks:{ color:'#cbd5e1' } }, y:{ ticks:{ color:'#cbd5e1' } } } } };
+    const chart = new Chart(ctx, config);
+
+    document.getElementById('benchToggle').addEventListener('change', e=>{
+      if(e.target.checked){
+        chart.data.datasets.push({ label:'Industry Benchmark', data:[100,110,120,130,140,150,160], borderDash:[6,4], borderColor:'#60A5FA', backgroundColor:'rgba(96,165,250,0.06)', tension:0.3 });
+      } else {
+        chart.data.datasets = chart.data.datasets.filter(ds=>ds.label!=='Industry Benchmark');
+      }
+      chart.update();
+    });
+  </script>
+</body>
+</html>

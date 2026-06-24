@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <linearGradient id="mGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A2D5E"/><stop offset="100%" stop-color="#1e4b8a"/>
+    </linearGradient>
+    <linearGradient id="mGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6600"/><stop offset="100%" stop-color="#ff9933"/>
+    </linearGradient>
+    <filter id="mShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0A2D5E" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="200" cy="200" r="180" fill="url(#mGrad1)" opacity="0.03"/>
+  <circle cx="200" cy="180" r="100" fill="url(#mGrad2)" opacity="0.03"/>
+
+  <!-- Large decorative code bracket -->
+  <path d="M60 100 L40 130 L60 160" stroke="url(#mGrad2)" stroke-width="2.5" fill="none" opacity="0.08"/>
+  <path d="M340 80 L360 110 L340 140" stroke="url(#mGrad2)" stroke-width="2.5" fill="none" opacity="0.08"/>
+  
+  <!-- Phone 1 (left) - main device -->
+  <g filter="url(#mShadow)">
+    <rect x="90" y="70" width="95" height="250" rx="20" fill="#1e293b"/>
+    <rect x="94" y="75" width="87" height="240" rx="16" fill="#0f172a"/>
+    <rect x="98" y="79" width="79" height="232" rx="14" fill="#ffffff"/>
+    
+    <!-- Screen content: App UI -->
+    <rect x="98" y="79" width="79" height="20" rx="14" fill="url(#mGrad1)"/>
+    <circle cx="115" cy="89" r="4" fill="#fff" opacity="0.8"/>
+    <rect x="125" y="86" width="30" height="6" rx="3" fill="#fff" opacity="0.5"/>
+    
+    <!-- Mobile card layout -->
+    <rect x="103" y="104" width="69" height="12" rx="6" fill="url(#mGrad2)"/>
+    <rect x="103" y="120" width="69" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="0.5"/>
+    <rect x="108" y="125" width="30" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="108" y="137" width="40" height="4" rx="2" fill="#e2e8f0"/>
+    <circle cx="160" cy="132" r="8" fill="rgba(255,102,0,0.1)"/>
+    <path d="M156 132 L164 132 M160 128 L160 136" stroke="#ff6600" stroke-width="1.5" stroke-linecap="round"/>
+    
+    <rect x="103" y="168" width="69" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="0.5"/>
+    <rect x="108" y="173" width="25" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="108" y="185" width="35" height="4" rx="2" fill="#e2e8f0"/>
+    <circle cx="160" cy="180" r="8" fill="rgba(16,185,129,0.1)"/>
+    <rect x="156" y="177" width="8" height="6" rx="1" fill="#10b981"/>
+    
+    <rect x="103" y="216" width="69" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="0.5"/>
+    <rect x="108" y="221" width="35" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="108" y="233" width="30" height="4" rx="2" fill="#e2e8f0"/>
+    <circle cx="160" cy="228" r="8" fill="rgba(99,102,241,0.1)"/>
+    <rect x="157" y="224" width="6" height="8" rx="1" fill="#6366f1"/>
+
+    <!-- Bottom nav -->
+    <rect x="98" y="274" width="79" height="37" rx="0 0 14 14" fill="#f8fafc"/>
+    <circle cx="110" cy="292" r="5" fill="url(#mGrad2)"/>
+    <rect x="128" cy="292" width="4" height="4" rx="2" fill="#e2e8f0"/>
+    <rect x="146" cy="292" width="4" height="4" rx="2" fill="#e2e8f0"/>
+  </g>
+
+  <!-- Code lines floating right -->
+  <rect x="210" y="100" width="90" height="4" rx="2" fill="#0A2D5E" opacity="0.15"/>
+  <rect x="210" y="112" width="110" height="4" rx="2" fill="#0A2D5E" opacity="0.1"/>
+  <rect x="210" y="124" width="70" height="4" rx="2" fill="#ff6600" opacity="0.2"/>
+  <rect x="210" y="136" width="100" height="4" rx="2" fill="#0A2D5E" opacity="0.1"/>
+  <rect x="210" y="148" width="60" height="4" rx="2" fill="#10b981" opacity="0.15"/>
+  <rect x="210" y="160" width="80" height="4" rx="2" fill="#0A2D5E" opacity="0.12"/>
+  <rect x="210" y="172" width="95" height="4" rx="2" fill="#ff6600" opacity="0.18"/>
+  <rect x="210" y="184" width="50" height="4" rx="2" fill="#6366f1" opacity="0.15"/>
+  <rect x="210" y="196" width="85" height="4" rx="2" fill="#0A2D5E" opacity="0.1"/>
+
+  <!-- Small phone 2 -->
+  <g filter="url(#mShadow)" opacity="0.7">
+    <rect x="265" y="200" width="60" height="140" rx="14" fill="#1e293b"/>
+    <rect x="268" y="204" width="54" height="132" rx="11" fill="#0f172a"/>
+    <rect x="271" y="207" width="48" height="126" rx="9" fill="#ffffff"/>
+    <rect x="271" y="207" width="48" height="14" rx="9" fill="url(#mGrad2)"/>
+    <rect x="276" y="226" width="38" height="30" rx="6" fill="#f8fafc"/>
+    <rect x="279" y="230" width="32" height="3" rx="1.5" fill="#e2e8f0"/>
+    <rect x="279" y="236" width="25" height="3" rx="1.5" fill="#e2e8f0"/>
+    <rect x="279" y="242" width="30" height="3" rx="1.5" fill="#e2e8f0"/>
+  </g>
+
+  <!-- Connecting + icon -->
+  <circle cx="230" cy="280" r="16" fill="rgba(255,102,0,0.06)"/>
+  <path d="M230 272 L230 288 M222 280 L238 280" stroke="#ff6600" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <linearGradient id="wGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A2D5E"/><stop offset="100%" stop-color="#1e4b8a"/>
+    </linearGradient>
+    <linearGradient id="wGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6600"/><stop offset="100%" stop-color="#ff9933"/>
+    </linearGradient>
+    <filter id="wShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#0A2D5E" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="200" cy="200" r="180" fill="url(#wGrad1)" opacity="0.03"/>
+  <circle cx="200" cy="200" r="120" fill="url(#wGrad2)" opacity="0.03"/>
+
+  <!-- Laptop lid -->
+  <path d="M50 100 L350 100 L340 250 L60 250 Z" fill="#1e293b" filter="url(#wShadow)"/>
+  <!-- Laptop screen bezel -->
+  <path d="M65 112 L335 112 L326 240 L74 240 Z" fill="#0f172a"/>
+  <!-- Screen content -->
+  <path d="M70 116 L330 116 L322 236 L78 236 Z" fill="#ffffff"/>
+
+  <!-- Browser mockup on screen -->
+  <!-- Browser toolbar -->
+  <rect x="78" y="116" width="244" height="22" fill="#f8fafc"/>
+  <circle cx="90" cy="127" r="3.5" fill="#ef4444"/>
+  <circle cx="101" cy="127" r="3.5" fill="#f59e0b"/>
+  <circle cx="112" cy="127" r="3.5" fill="#10b981"/>
+  <rect x="125" y="122" width="80" height="10" rx="5" fill="#e2e8f0"/>
+  <rect x="220" y="122" width="60" height="10" rx="5" fill="#e2e8f0"/>
+
+  <!-- Website content -->
+  <!-- Navbar -->
+  <rect x="78" y="138" width="244" height="20" fill="url(#wGrad1)"/>
+  <rect x="85" y="145" width="40" height="6" rx="3" fill="#fff" opacity="0.7"/>
+  <rect x="130" y="145" width="25" height="6" rx="3" fill="#fff" opacity="0.4"/>
+  <rect x="160" y="145" width="25" height="6" rx="3" fill="#fff" opacity="0.4"/>
+  <rect x="190" y="145" width="25" height="6" rx="3" fill="#fff" opacity="0.4"/>
+  <rect x="290" y="143" width="24" height="10" rx="5" fill="url(#wGrad2)"/>
+
+  <!-- Hero section on website -->
+  <rect x="78" y="158" width="244" height="60" fill="#f8fafc"/>
+  <rect x="90" y="168" width="100" height="8" rx="4" fill="#0f172a" opacity="0.8"/>
+  <rect x="90" y="180" width="130" height="6" rx="3" fill="#64748b"/>
+  <rect x="90" y="190" width="80" height="6" rx="3" fill="#64748b"/>
+  <rect x="90" y="202" width="70" height="12" rx="6" fill="url(#wGrad2)"/>
+
+  <!-- Image placeholder -->
+  <rect x="220" y="165" width="90" height="45" rx="6" fill="url(#wGrad1)" opacity="0.1"/>
+
+  <!-- Content section -->
+  <rect x="85" y="225" width="50" height="6" rx="3" fill="#0f172a" opacity="0.6"/>
+  <rect x="85" y="235" width="230" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="85" y="243" width="200" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="85" y="251" width="180" height="4" rx="2" fill="#f1f5f9"/>
+  <rect x="85" y="259" width="220" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="85" y="267" width="160" height="4" rx="2" fill="#f1f5f9"/>
+
+  <!-- Laptop base -->
+  <path d="M40 250 L360 250 L340 265 Q330 275 310 278 L90 278 Q70 275 60 265 Z" fill="#334155"/>
+  <path d="M55 254 L345 254 L328 264 Q320 270 305 273 L95 273 Q80 270 72 264 Z" fill="#475569" opacity="0.6"/>
+
+  <!-- Floating decorative -->
+  <circle cx="30" cy="90" r="5" fill="url(#wGrad2)" opacity="0.1"/>
+  <circle cx="370" cy="80" r="7" fill="url(#wGrad1)" opacity="0.06"/>
+  <path d="M370 200 Q375 190 380 200" stroke="url(#wGrad2)" stroke-width="2" fill="none" opacity="0.12"/>
+  <path d="M25 170 L35 170 M30 165 L30 175" stroke="url(#wGrad2)" stroke-width="1.5" fill="none" opacity="0.15"/>
+
+  <!-- Globe/browser icon -->
+  <circle cx="370" cy="310" r="14" fill="url(#wGrad1)" opacity="0.06"/>
+  <circle cx="370" cy="310" r="10" fill="none" stroke="url(#wGrad2)" stroke-width="1.2" opacity="0.2"/>
+  <line x1="360" y1="310" x2="380" y2="310" stroke="url(#wGrad2)" stroke-width="1" opacity="0.15"/>
+  <path d="M363 305 Q370 315 377 305" stroke="url(#wGrad2)" stroke-width="1" fill="none" opacity="0.15"/>
+</svg>

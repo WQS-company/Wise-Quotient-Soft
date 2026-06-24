@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>African Classes – Rules & Regulations</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+  background:#f8f9fa;
+  font-family:Inter,system-ui,sans-serif;
+  padding:40px 15px;
+}
+.rules-card{
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+.header{
+  background:linear-gradient(135deg,#1f7ae0,#f6b500);
+  color:#fff;
+  padding:25px;
+  text-align:center;
+}
+.lang-switch{
+  text-align:center;
+  margin-top:20px;
+}
+.lang-btn{
+  border:none;
+  padding:8px 16px;
+  border-radius:6px;
+  font-weight:600;
+  margin:0 5px;
+  background:#1f7ae0;
+  color:#fff;
+}
+.section{
+  padding:30px;
+}
+ul li{
+  margin-bottom:8px;
+}
+.hausa{
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="rules-card">
+
+<div class="header">
+  <h3>African Classes Initiative</h3>
+  <p>Student Rules & Regulations</p>
+</div>
+
+<div class="lang-switch">
+  <button class="lang-btn" onclick="showEnglish()">English</button>
+  <button class="lang-btn" onclick="showHausa()">Hausa</button>
+</div>
+
+<!-- ENGLISH VERSION -->
+<div id="englishSection" class="section english">
+
+<h5>General Rules</h5>
+<ul>
+<li>Students must attend classes regularly and be punctual.</li>
+<li>Respect for instructors and fellow students is mandatory.</li>
+<li>Students should maintain a clean and safe learning environment.</li>
+<li>Use of abusive language or fighting is strictly prohibited.</li>
+<li>Students must not damage any class property.</li>
+</ul>
+
+<h5>Enrollment and Participation</h5>
+<ul>
+<li>All personal information submitted must be correct and verifiable.</li>
+<li>Students must select at least one class day and preferred time.</li>
+<li>Enrollment is valid only after confirmation by African Classes.</li>
+<li>Students should participate actively and complete assigned tasks.</li>
+</ul>
+
+<h5>Communication and Conduct</h5>
+<ul>
+<li>Students must join the official learning channel (WhatsApp, YouTube, etc.).</li>
+<li>Students should follow instructions given by instructors in the learning group.</li>
+<li>Any form of cheating or impersonation will lead to removal.</li>
+</ul>
+
+<h5>Safety and Responsibility</h5>
+<ul>
+<li>Students are responsible for their own devices and belongings.</li>
+<li>African Classes is not liable for loss or damage of personal items.</li>
+<li>Students must not share harmful or illegal content in class groups.</li>
+</ul>
+
+<h5>Certification</h5>
+<ul>
+<li>Students will only receive certificates after completing the program.</li>
+<li>Consistent attendance and participation are required for certification.</li>
+</ul>
+
+<p class="mt-3 text-success fw-semibold">
+By enrolling, you agree to abide by all the above rules and regulations.
+</p>
+
+</div>
+
+<!-- HAUSA VERSION -->
+<div id="hausaSection" class="section hausa">
+
+<h5>Dokokin Gabaɗaya</h5>
+<ul>
+<li>Dalibai dole ne su halarci darasi akai-akai kuma su kasance masu zuwa akan lokaci.</li>
+<li>Girmama masu koyarwa da sauran dalibai wajibi ne.</li>
+<li>Dalibai su kiyaye tsafta da tsaro a wajen karatu.</li>
+<li>Amfani da kalaman cin zarafi ko faɗa an haramta.</li>
+<li>Dalibai ba su da izinin lalata kayan aji.</li>
+</ul>
+
+<h5>Shiga da Halartar Darasi</h5>
+<ul>
+<li>Dukkan bayanan da aka cika dole ne su kasance daidai.</li>
+<li>Dalibi dole ne ya zaɓi ranakun da zai halarci darasi da lokacin da ya fi so.</li>
+<li>Shigar dalibi zai tabbata ne bayan African Classes ta tabbatar.</li>
+<li>Dalibai su yi aiki tare kuma su kammala ayyukan da aka ba su.</li>
+</ul>
+
+<h5>Sadarwa da Ɗabi’a</h5>
+<ul>
+<li>Dalibi dole ne ya shiga tashar karatu kamar WhatsApp ko YouTube.</li>
+<li>Dalibai su bi duk umarnin da aka bayar daga masu koyarwa a cikin rukuni.</li>
+<li>Duk wani nau’in magudi ko amfani da sunan wani zai sa a kore dalibi.</li>
+</ul>
+
+<h5>Tsaro da Alhaki</h5>
+<ul>
+<li>Dalibi na da alhakin kayansa da na’urorinsa.</li>
+<li>African Classes ba ta da alhakin asarar kayan dalibi.</li>
+<li>Ba a yarda a raba abu mai cutarwa ko haram a rukuni ba.</li>
+</ul>
+
+<h5>Takardar Shaida</h5>
+<ul>
+<li>Dalibi zai samu takardar shaida ne bayan ya kammala karatun.</li>
+<li>Dole ne ya halarci darasi akai-akai domin samun takardar.</li>
+</ul>
+
+<p class="mt-3 text-success fw-semibold">
+Ta hanyar yin rajista, ka amince da dukkan dokokin da ke sama.
+</p>
+
+</div>
+
+</div>
+
+<script>
+function showEnglish(){
+  document.getElementById("englishSection").style.display="block";
+  document.getElementById("hausaSection").style.display="none";
+}
+function showHausa(){
+  document.getElementById("englishSection").style.display="none";
+  document.getElementById("hausaSection").style.display="block";
+}
+</script>
+
+</body>
+</html>

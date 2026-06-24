@@ -1,0 +1,68 @@
+# WQS Security Rules
+
+# Block Firebase service account
+<Files "firebase-service-account.json">
+    Require all denied
+</Files>
+
+# Block environment file
+<Files ".env">
+    Require all denied
+</Files>
+
+# Block source code archives
+<FilesMatch "\.(zip|tar|gz|rar)$">
+    Require all denied
+</FilesMatch>
+
+# Block log files
+<FilesMatch "\.(log|sql)$">
+    Require all denied
+</FilesMatch>
+
+# Block config files
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Block installation scripts
+<FilesMatch "^(install_ads_system|dump_schema|describe_users|alter_role|alter_role_ceo)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Block social-login duplicate files
+<FilesMatch "^social-login\([0-9]+\)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Block access to sensitive directories via RewriteRule
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Block Database directory
+    RewriteRule ^Database/ - [F,L]
+    
+    # Block scratch directory
+    RewriteRule ^scratch/ - [F,L]
+    
+    # Block logs directory
+    RewriteRule ^logs/ - [F,L]
+    
+    # Block .git directory
+    RewriteRule ^\.git - [F,L]
+    
+    # Remove trailing slashes for non-directories
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Permissions-Policy "camera=(), microphone=(self), geolocation=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>

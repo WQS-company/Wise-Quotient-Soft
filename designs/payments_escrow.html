@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prototype — Payments & Escrow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-8">
+  <div class="max-w-4xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold">Payments & Escrow</h1>
+    </header>
+
+    <section class="grid grid-cols-3 gap-6">
+      <div class="col-span-1 bg-white/5 p-4 rounded-lg">
+        <div class="text-sm text-slate-300">Balance</div>
+        <div class="text-3xl font-semibold mt-2">$8,450.00</div>
+        <div class="mt-4 space-y-2">
+          <button class="w-full py-2 bg-teal-500 rounded">Withdraw</button>
+          <button class="w-full py-2 bg-slate-700 rounded">Schedule Payout</button>
+        </div>
+      </div>
+
+      <div class="col-span-2 bg-white/5 p-4 rounded-lg">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-medium">Transactions</h2>
+          <div class="text-sm text-slate-300">Showing recent</div>
+        </div>
+        <ul class="space-y-3">
+          <li class="flex items-start justify-between p-3 bg-slate-800/40 rounded">
+            <div>
+              <div class="font-medium">Escrow released — Project Alpha</div>
+              <div class="text-sm text-slate-400">Jul 3 • $1,200</div>
+            </div>
+            <div class="text-teal-400">Released</div>
+          </li>
+          <li class="flex items-start justify-between p-3 bg-slate-800/40 rounded">
+            <div>
+              <div class="font-medium">Invoice paid — Client Z</div>
+              <div class="text-sm text-slate-400">Jun 29 • $650</div>
+            </div>
+            <div class="text-green-400">Completed</div>
+          </li>
+          <li class="flex items-start justify-between p-3 bg-slate-800/40 rounded">
+            <div>
+              <div class="font-medium">Escrow held — Project Beta</div>
+              <div class="text-sm text-slate-400">Jun 20 • $2,000</div>
+            </div>
+            <div class="text-amber-400">Held</div>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

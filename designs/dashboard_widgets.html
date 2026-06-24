@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prototype — Customizable Widgets</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .frost { background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
+    .widget { border-radius:12px; box-shadow: 0 6px 18px rgba(11,15,40,0.12); }
+    .handle { cursor:grab }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100 min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold">Dashboard — Widgets (Prototype)</h1>
+      <div class="space-x-2">
+        <button id="saveBtn" class="px-4 py-2 bg-teal-500 rounded-md">Save Layout</button>
+        <button id="resetBtn" class="px-4 py-2 bg-slate-700 rounded-md">Reset</button>
+      </div>
+    </header>
+
+    <section id="widgetLibrary" class="mb-4">
+      <label class="text-sm text-slate-300">Widget Library</label>
+      <div class="mt-2 flex gap-2">
+        <button class="addWidget px-3 py-2 bg-indigo-600 rounded-md">Add KPI</button>
+        <button class="addWidget px-3 py-2 bg-indigo-500 rounded-md">Add Chart</button>
+        <button class="addWidget px-3 py-2 bg-indigo-400 rounded-md">Add Activity</button>
+      </div>
+    </section>
+
+    <main>
+      <div id="grid" class="grid grid-cols-3 gap-4" aria-label="Widgets grid"></div>
+    </main>
+  </div>
+
+  <template id="widgetTpl">
+    <div class="widget frosty p-4 bg-white/3" draggable="true">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="handle w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">≡</div>
+          <h3 class="text-lg font-medium">Widget</h3>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-2 py-1 bg-slate-700 rounded">⋯</button>
+        </div>
+      </div>
+      <div class="widget-body text-slate-200">Content</div>
+    </div>
+  </template>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const tpl = document.getElementById('widgetTpl');
+
+    function createWidget(type){
+      const el = tpl.content.firstElementChild.cloneNode(true);
+      el.querySelector('h3').textContent = type;
+      el.querySelector('.widget-body').textContent = type + ' content';
+      addDragHandlers(el);
+      return el;
+    }
+
+    function addDragHandlers(el){
+      el.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/id', Array.from(grid.children).indexOf(el)); el.classList.add('opacity-60'); });
+      el.addEventListener('dragend', e=>{ el.classList.remove('opacity-60'); });
+      el.addEventListener('dragover', e=> e.preventDefault());
+      el.addEventListener('drop', e=>{
+        e.preventDefault();
+        const srcIdx = parseInt(e.dataTransfer.getData('text/id'));
+        const src = grid.children[srcIdx];
+        if(!src) return;
+        grid.insertBefore(src, el);
+      });
+    }
+
+    document.querySelectorAll('.addWidget').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ grid.appendChild(createWidget(btn.textContent)); });
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', ()=>{
+      const order = Array.from(grid.children).map(c=>c.querySelector('h3').textContent);
+      localStorage.setItem('wqs_layout', JSON.stringify(order));
+      alert('Layout saved to localStorage');
+    });
+    document.getElementById('resetBtn').addEventListener('click', ()=>{ localStorage.removeItem('wqs_layout'); grid.innerHTML=''; });
+
+    // restore sample layout
+    const saved = JSON.parse(localStorage.getItem('wqs_layout')||'[]');
+    if(saved.length){ saved.forEach(t=> grid.appendChild(createWidget(t))); }
+    else{ ['KPI','Chart','Activity'].forEach(t=> grid.appendChild(createWidget(t))); }
+  </script>
+</body>
+</html>

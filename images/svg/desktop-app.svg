@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <linearGradient id="dGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A2D5E"/><stop offset="100%" stop-color="#1e4b8a"/>
+    </linearGradient>
+    <linearGradient id="dGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6600"/><stop offset="100%" stop-color="#ff9933"/>
+    </linearGradient>
+    <linearGradient id="dGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="dShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="#0A2D5E" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background decorative -->
+  <circle cx="200" cy="200" r="180" fill="url(#dGrad1)" opacity="0.03"/>
+  <circle cx="200" cy="200" r="130" fill="url(#dGrad2)" opacity="0.03"/>
+
+  <!-- Monitor stand -->
+  <rect x="175" y="290" width="50" height="8" rx="4" fill="#334155"/>
+  <rect x="190" y="298" width="20" height="25" rx="3" fill="#1e293b"/>
+  <rect x="170" y="323" width="60" height="6" rx="3" fill="#1e293b"/>
+  <rect x="170" y="323" width="60" height="6" rx="3" fill="#334155" opacity="0.5"/>
+
+  <!-- Monitor body -->
+  <rect x="80" y="50" width="240" height="240" rx="16" fill="#1e293b" filter="url(#dShadow)"/>
+  <!-- Screen bezel inner -->
+  <rect x="90" y="60" width="220" height="220" rx="10" fill="#0f172a"/>
+  <!-- Screen content -->
+  <rect x="95" y="65" width="210" height="210" rx="8" fill="#ffffff"/>
+  
+  <!-- Top bar with dots -->
+  <rect x="95" y="65" width="210" height="20" rx="8" fill="#f8fafc"/>
+  <circle cx="108" cy="75" r="3.5" fill="#ef4444"/>
+  <circle cx="120" cy="75" r="3.5" fill="#f59e0b"/>
+  <circle cx="132" cy="75" r="3.5" fill="#10b981"/>
+  <rect x="145" y="71" width="80" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="260" y="71" width="36" height="8" rx="4" fill="#e2e8f0"/>
+
+  <!-- Dashboard content -->
+  <!-- Sidebar -->
+  <rect x="95" y="85" width="40" height="190" fill="#f8fafc"/>
+  <rect x="100" y="92" width="30" height="6" rx="3" fill="url(#dGrad2)" opacity="0.5"/>
+  <rect x="100" y="104" width="30" height="6" rx="3" fill="#e2e8f0"/>
+  <rect x="100" y="116" width="30" height="6" rx="3" fill="#e2e8f0"/>
+  <rect x="100" y="128" width="30" height="6" rx="3" fill="#e2e8f0"/>
+  
+  <!-- Chart area -->
+  <rect x="142" y="90" width="155" height="80" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="0.5"/>
+  <!-- Bar chart -->
+  <rect x="152" y="140" width="16" height="24" rx="3" fill="url(#dGrad2)" opacity="0.7"/>
+  <rect x="174" y="120" width="16" height="44" rx="3" fill="url(#dGrad1)" opacity="0.7"/>
+  <rect x="196" y="130" width="16" height="34" rx="3" fill="url(#dGrad2)" opacity="0.7"/>
+  <rect x="218" y="110" width="16" height="54" rx="3" fill="url(#dGrad1)" opacity="0.7"/>
+  <rect x="240" y="135" width="16" height="29" rx="3" fill="url(#dGrad2)" opacity="0.5"/>
+  <rect x="262" y="125" width="16" height="39" rx="3" fill="url(#dGrad3)" opacity="0.6"/>
+  
+  <!-- Line graph overlay -->
+  <path d="M155 150 L175 130 L195 140 L215 115 L235 145 L255 120 L275 135" stroke="#ff6600" stroke-width="1.5" fill="none" opacity="0.4"/>
+  
+  <!-- Stats row -->
+  <rect x="142" y="178" width="48" height="44" rx="6" fill="rgba(255,102,0,0.06)"/>
+  <text x="166" y="196" font-family="sans-serif" font-size="14" font-weight="800" fill="#ff6600" text-anchor="middle">$12k</text>
+  <text x="166" y="214" font-family="sans-serif" font-size="6" fill="#64748b" text-anchor="middle">Revenue</text>
+  
+  <rect x="196" y="178" width="48" height="44" rx="6" fill="rgba(16,185,129,0.06)"/>
+  <text x="220" y="196" font-family="sans-serif" font-size="14" font-weight="800" fill="#10b981" text-anchor="middle">85%</text>
+  <text x="220" y="214" font-family="sans-serif" font-size="6" fill="#64748b" text-anchor="middle">Growth</text>
+  
+  <rect x="250" y="178" width="48" height="44" rx="6" fill="rgba(99,102,241,0.06)"/>
+  <text x="274" y="196" font-family="sans-serif" font-size="14" font-weight="800" fill="#6366f1" text-anchor="middle">4.8</text>
+  <text x="274" y="214" font-family="sans-serif" font-size="6" fill="#64748b" text-anchor="middle">Rating</text>
+
+  <!-- Table preview -->
+  <line x1="142" y1="232" x2="297" y2="232" stroke="#e2e8f0" stroke-width="0.5"/>
+  <rect x="142" y="236" width="155" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="142" y="244" width="155" height="4" rx="2" fill="#f1f5f9"/>
+  <rect x="142" y="252" width="155" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="142" y="260" width="100" height="4" rx="2" fill="#f1f5f9"/>
+
+  <!-- Floating decorative elements -->
+  <circle cx="50" cy="120" r="6" fill="url(#dGrad2)" opacity="0.08"/>
+  <circle cx="350" cy="160" r="8" fill="url(#dGrad1)" opacity="0.06"/>
+  <path d="M60 200 Q65 190 70 200" stroke="url(#dGrad2)" stroke-width="2" fill="none" opacity="0.15"/>
+  <path d="M55 210 Q65 195 75 210" stroke="url(#dGrad2)" stroke-width="2" fill="none" opacity="0.1"/>
+  <circle cx="340" cy="280" r="5" fill="url(#dGrad2)" opacity="0.1"/>
+</svg>

@@ -1,0 +1,35 @@
+# robots.txt - Wise Quotient Soft
+# https://wisequotientsoft.com/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /user/
+Disallow: /api/
+Disallow: /config.php
+Disallow: /includes/
+Disallow: /firebase-service-account.json
+Disallow: /.env
+Disallow: /cgi-bin/
+
+# Sitemaps
+Sitemap: https://wisequotientsoft.com/sitemap.php
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Allow search engines to index all pages
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Disallow admin and private areas for all bots
+User-agent: *
+Disallow: /admin/
+Disallow: /user/
+Disallow: /api/

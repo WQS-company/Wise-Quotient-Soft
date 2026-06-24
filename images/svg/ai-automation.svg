@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <defs>
+    <linearGradient id="aGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A2D5E"/><stop offset="100%" stop-color="#1e4b8a"/>
+    </linearGradient>
+    <linearGradient id="aGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6600"/><stop offset="100%" stop-color="#ff9933"/>
+    </linearGradient>
+    <linearGradient id="aGradBrain" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="aGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="200" cy="200" r="180" fill="url(#aGrad1)" opacity="0.03"/>
+  <circle cx="200" cy="200" r="120" fill="url(#aGrad2)" opacity="0.03"/>
+
+  <!-- Neural network nodes -->
+  <circle cx="80" cy="120" r="6" fill="url(#aGrad2)" opacity="0.15"/>
+  <circle cx="320" cy="100" r="6" fill="url(#aGrad2)" opacity="0.15"/>
+  <circle cx="200" cy="80" r="5" fill="url(#aGradBrain)" opacity="0.15"/>
+  <circle cx="120" cy="280" r="5" fill="url(#aGrad2)" opacity="0.12"/>
+  <circle cx="300" cy="290" r="5" fill="url(#aGradBrain)" opacity="0.12"/>
+
+  <!-- Connection lines (neural) -->
+  <path d="M80 120 Q120 100 200 80" stroke="url(#aGrad2)" stroke-width="1" fill="none" opacity="0.12"/>
+  <path d="M320 100 Q260 85 200 80" stroke="url(#aGrad2)" stroke-width="1" fill="none" opacity="0.12"/>
+  <path d="M80 120 Q100 200 120 280" stroke="url(#aGrad2)" stroke-width="1" fill="none" opacity="0.08"/>
+  <path d="M320 100 Q310 200 300 290" stroke="url(#aGradBrain)" stroke-width="1" fill="none" opacity="0.08"/>
+  <path d="M200 80 Q180 180 120 280" stroke="url(#aGradBrain)" stroke-width="1" fill="none" opacity="0.07"/>
+  <path d="M200 80 Q250 180 300 290" stroke="url(#aGrad2)" stroke-width="1" fill="none" opacity="0.07"/>
+
+  <!-- Central brain/processor -->
+  <g filter="url(#aGlow)">
+    <circle cx="200" cy="190" r="55" fill="url(#aGrad1)" opacity="0.08"/>
+    <circle cx="200" cy="190" r="45" fill="url(#aGrad1)" opacity="0.12"/>
+    <circle cx="200" cy="190" r="35" fill="url(#aGrad1)" opacity="0.2"/>
+    <circle cx="200" cy="190" r="28" fill="url(#aGrad1)" opacity="0.35"/>
+  </g>
+
+  <!-- AI chip / microchip icon -->
+  <rect x="178" y="168" width="44" height="44" rx="8" fill="url(#aGradBrain)"/>
+  <rect x="183" y="173" width="34" height="34" rx="5" fill="#0f172a"/>
+  <!-- Chip inner lines -->
+  <rect x="188" y="183" width="24" height="4" rx="2" fill="url(#aGrad2)" opacity="0.9"/>
+  <rect x="188" y="191" width="24" height="4" rx="2" fill="url(#aGradBrain)" opacity="0.9"/>
+  <rect x="188" y="199" width="24" height="4" rx="2" fill="#10b981" opacity="0.8"/>
+  <!-- Pins -->
+  <rect x="176" y="178" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+  <rect x="176" y="186" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+  <rect x="176" y="194" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+  <rect x="221" y="178" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+  <rect x="221" y="186" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+  <rect x="221" y="194" width="3" height="4" rx="1" fill="#e2e8f0" opacity="0.5"/>
+
+  <!-- Circular orbit around brain -->
+  <circle cx="200" cy="190" r="70" fill="none" stroke="url(#aGrad2)" stroke-width="1" opacity="0.15" stroke-dasharray="4 8"/>
+  <circle cx="200" cy="190" r="85" fill="none" stroke="url(#aGradBrain)" stroke-width="0.8" opacity="0.1" stroke-dasharray="2 10"/>
+
+  <!-- Robot arm icon bottom left -->
+  <g opacity="0.15">
+    <rect x="60" y="280" width="12" height="40" rx="4" fill="#0A2D5E"/>
+    <circle cx="66" cy="278" r="8" fill="#ff6600"/>
+    <rect x="70" y="290" width="30" height="8" rx="4" fill="#0A2D5E"/>
+    <circle cx="100" cy="294" r="5" fill="#ff6600"/>
+  </g>
+
+  <!-- Database / data server bottom right -->
+  <g opacity="0.12">
+    <rect x="290" y="280" width="30" height="40" rx="4" fill="#0A2D5E"/>
+    <rect x="290" y="280" width="30" height="8" rx="4" fill="#ff6600"/>
+    <rect x="295" y="292" width="20" height="3" rx="1.5" fill="#e2e8f0"/>
+    <rect x="295" y="300" width="20" height="3" rx="1.5" fill="#e2e8f0"/>
+    <rect x="295" y="308" width="20" height="3" rx="1.5" fill="#e2e8f0"/>
+  </g>
+
+  <!-- Floating data points -->
+  <circle cx="150" cy="130" r="3" fill="#10b981" opacity="0.3"/>
+  <circle cx="260" cy="140" r="2" fill="#6366f1" opacity="0.25"/>
+  <circle cx="140" cy="250" r="2.5" fill="#ff6600" opacity="0.2"/>
+  <circle cx="270" cy="260" r="3" fill="#10b981" opacity="0.2"/>
+
+  <!-- Sparkle dots -->
+  <circle cx="200" cy="110" r="2" fill="#ff6600" opacity="0.3"/>
+  <circle cx="200" cy="270" r="2" fill="#ff6600" opacity="0.2"/>
+  <circle cx="140" cy="190" r="1.5" fill="#6366f1" opacity="0.25"/>
+  <circle cx="260" cy="190" r="1.5" fill="#6366f1" opacity="0.25"/>
+</svg>
