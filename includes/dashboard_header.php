@@ -952,7 +952,7 @@ if (isset($page_permission_map[$current_page])) {
     <header class="top-navbar">
       <div class="d-flex align-items-center gap-3">
         <!-- Toggle button for mobile screens -->
-        <button class="mobile-hamburger" id="sidebarToggle" aria-label="Toggle Navigation" onclick="console.log('INLINE CLICK WORKED!'); toggleSidebar();">
+        <button class="mobile-hamburger" id="sidebarToggle" aria-label="Toggle Navigation">
           <i class="fas fa-bars"></i>
         </button>
         <h1 class="page-title-header"><?= isset($page_title) ? htmlspecialchars($page_title) : 'Dashboard' ?></h1>

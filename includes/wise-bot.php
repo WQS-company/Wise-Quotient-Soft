@@ -24,22 +24,35 @@ if ($user_id) {
     try {
         $bridgeStmt = $pdo->prepare("UPDATE bot_chats SET user_id = ? WHERE session_id = ? AND user_id IS NULL");
         $bridgeStmt->execute([$user_id, $session_id]);
+        $bridgeSessStmt = $pdo->prepare("UPDATE bot_chat_sessions SET user_id = ? WHERE session_id = ? AND user_id IS NULL");
+        $bridgeSessStmt->execute([$user_id, $session_id]);
     } catch (Exception $e) {
         // Fail-safe
     }
 }
 
-// Fetch chat history (last 30 messages)
+// Fetch chat history (last 30 messages) — scoped to current user only
 $chatHistory = [];
 try {
-    $histStmt = $pdo->prepare("
-        SELECT role, message, created_at FROM (
-            SELECT role, message, created_at FROM bot_chats 
-            WHERE (session_id = ? OR (user_id IS NOT NULL AND user_id = ?)) AND is_deleted_by_user = 0
-            ORDER BY created_at DESC LIMIT 30
-        ) tmp ORDER BY created_at ASC
-    ");
-    $histStmt->execute([$session_id, $user_id]);
+    if ($user_id) {
+        $histStmt = $pdo->prepare("
+            SELECT role, message, created_at FROM (
+                SELECT role, message, created_at FROM bot_chats 
+                WHERE user_id = ? AND is_deleted_by_user = 0
+                ORDER BY created_at DESC LIMIT 30
+            ) tmp ORDER BY created_at ASC
+        ");
+        $histStmt->execute([$user_id]);
+    } else {
+        $histStmt = $pdo->prepare("
+            SELECT role, message, created_at FROM (
+                SELECT role, message, created_at FROM bot_chats 
+                WHERE session_id = ? AND user_id IS NULL AND is_deleted_by_user = 0
+                ORDER BY created_at DESC LIMIT 30
+            ) tmp ORDER BY created_at ASC
+        ");
+        $histStmt->execute([$session_id]);
+    }
     $chatHistory = $histStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     // Fail-safe
@@ -174,6 +187,7 @@ if (!function_exists('formatChatMessage')) {
     z-index: 1000;
     animation: fadeIn 0.4s ease;
     transition: all 0.3s ease;
+    overflow: hidden;
   }
 
   .assistant-box.show {
@@ -373,14 +387,16 @@ if (!function_exists('formatChatMessage')) {
     background: var(--chat-bg);
     z-index: 1001;
     transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     border-radius: var(--chat-radius);
     overflow: hidden;
+    visibility: hidden;
   }
   .history-panel.open {
     transform: translateX(0);
+    visibility: visible;
   }
   .history-header {
     background: var(--chat-primary);
@@ -725,6 +741,213 @@ if (!function_exists('formatChatMessage')) {
 }
 .link-person-btn:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
 .support-resolve-badge { display: inline-flex; align-items: center; gap: 6px; background: #f0fdf4; color: #15803d; padding: 8px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; margin: 8px 0; border: 1px solid #86efac; }
+
+/* ----- Guest Auth Quick Action Buttons ----- */
+.auth-quick-actions {
+  display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0;
+  animation: fadeIn 0.3s ease;
+}
+.auth-quick-actions .auth-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;
+  border: none; cursor: pointer; transition: all 0.25s ease;
+  color: #fff; white-space: nowrap;
+}
+.auth-quick-actions .auth-btn.login-btn { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+.auth-quick-actions .auth-btn.register-btn { background: linear-gradient(135deg, #059669, #10b981); }
+.auth-quick-actions .auth-btn.forgot-btn { background: linear-gradient(135deg, #d97706, #f59e0b); }
+.auth-quick-actions .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.auth-quick-actions .auth-btn:active { transform: scale(0.97); }
+.assistant-dark .auth-quick-actions .auth-btn { opacity: 0.9; }
+
+/* ----- Auth Progress Indicator ----- */
+.auth-progress-bar {
+  display: flex; align-items: center; gap: 8px; margin: 8px 0; padding: 8px 12px;
+  background: rgba(37, 99, 235, 0.08); border-radius: 10px; font-size: 0.78rem; color: #1e40af;
+}
+.assistant-dark .auth-progress-bar { background: rgba(96, 165, 250, 0.12); color: #93c5fd; }
+.auth-progress-bar .progress-track {
+  flex: 1; height: 6px; background: rgba(37, 99, 235, 0.15); border-radius: 3px; overflow: hidden;
+}
+.auth-progress-bar .progress-fill {
+  height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6); border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.auth-progress-bar .step-label { font-weight: 600; white-space: nowrap; }
+
+/* ----- Auth Success Banner ----- */
+.auth-success-banner {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-radius: 12px;
+  margin: 8px 0; animation: fadeIn 0.3s ease;
+}
+.auth-success-banner .success-icon { font-size: 1.5rem; }
+.auth-success-banner .success-text { font-weight: 600; color: #166534; font-size: 0.9rem; }
+.auth-success-banner .success-btn {
+  margin-top: 8px; padding: 8px 16px; background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 0.82rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.auth-success-banner .success-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+.assistant-dark .auth-success-banner { background: linear-gradient(135deg, #064e3b, #065f46); }
+.assistant-dark .auth-success-banner .success-text { color: #86efac; }
+
+/* ----- Professional Auth Loading Card ----- */
+.auth-loading-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,244,248,0.95));
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 12px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.assistant-dark .auth-loading-card {
+  background: linear-gradient(135deg, rgba(31,31,31,0.95), rgba(26,26,26,0.95));
+  border-color: rgba(96, 165, 250, 0.2);
+}
+.auth-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(37, 99, 235, 0.1);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.assistant-dark .auth-loading-spinner {
+  border-color: rgba(96, 165, 250, 0.1);
+  border-top-color: #60a5fa;
+}
+.auth-loading-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1e3a8a;
+}
+.assistant-dark .auth-loading-title {
+  color: #93c5fd;
+}
+.auth-loading-desc {
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+.assistant-dark .auth-loading-desc {
+  color: #9ca3af;
+}
+.auth-progress-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.assistant-dark .auth-progress-track {
+  background: rgba(255,255,255,0.05);
+}
+.auth-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+.assistant-dark .auth-progress-fill {
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- Premium Custom Confirm Modal ----- */
+.custom-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+.custom-confirm-card {
+  background: var(--chat-bg);
+  color: var(--chat-light-text);
+  border-radius: 16px;
+  padding: 20px;
+  width: 85%;
+  max-width: 300px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  text-align: center;
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.assistant-dark .custom-confirm-card {
+  background: var(--chat-dark-bg);
+  color: var(--chat-dark-text);
+}
+.custom-confirm-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.custom-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.custom-confirm-btn {
+  padding: 8px 20px;
+  border-radius: 30px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+.custom-confirm-btn.btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+.custom-confirm-btn.btn-cancel:hover {
+  background: #e2e8f0;
+}
+.assistant-dark .custom-confirm-btn.btn-cancel {
+  background: #334155;
+  color: #cbd5e1;
+}
+.assistant-dark .custom-confirm-btn.btn-cancel:hover {
+  background: #475569;
+}
+.custom-confirm-btn.btn-confirm {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+.custom-confirm-btn.btn-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+}
+.custom-confirm-btn:active {
+  transform: scale(0.97);
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
 </style>
   
 <div class="assistant-wrapper" id="assistantWrapper">
@@ -1267,6 +1490,103 @@ if (!function_exists('formatChatMessage')) {
 
       let replyText = data.reply || '';
 
+      // Handle auth success marker — redirect to dashboard
+      const authSuccessMatch = replyText.match(/\[CHAT_AUTH_SUCCESS:\s*([^\]]+)\]/);
+      if (authSuccessMatch) {
+        let authRedirect = authSuccessMatch[1].trim();
+        // Sanitize redirect: only allow relative paths (no protocol, no double dots)
+        authRedirect = authRedirect.replace(/[^a-zA-Z0-9_\-\/\.]/g, '');
+        if (!authRedirect.match(/^[a-zA-Z0-9_\-\/]+\.php$/)) authRedirect = 'user/dashboard.php';
+        replyText = replyText.replace(authSuccessMatch[0], '');
+        
+        // Append message
+        appendMessage('bot', replyText);
+        receiveSound.play();
+
+        const isRegister = replyText.toLowerCase().includes('congratulations') || replyText.toLowerCase().includes('created');
+
+        // Show professional auth loading card
+        const loadingCard = document.createElement('div');
+        loadingCard.className = 'auth-loading-card';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'auth-loading-spinner';
+
+        const title = document.createElement('div');
+        title.className = 'auth-loading-title';
+        title.textContent = isRegister ? 'Creating Account' : 'Authenticating';
+
+        const desc = document.createElement('div');
+        desc.className = 'auth-loading-desc';
+        desc.textContent = isRegister ? 'Setting up your secure workspace...' : 'Verifying secure credentials...';
+
+        const progressTrack = document.createElement('div');
+        progressTrack.className = 'auth-progress-track';
+        const progressFill = document.createElement('div');
+        progressFill.className = 'auth-progress-fill';
+        progressTrack.appendChild(progressFill);
+
+        loadingCard.appendChild(spinner);
+        loadingCard.appendChild(title);
+        loadingCard.appendChild(desc);
+        loadingCard.appendChild(progressTrack);
+
+        bodyBox.appendChild(loadingCard);
+        bodyBox.scrollTop = bodyBox.scrollHeight;
+
+        // Steps simulation
+        let progress = 0;
+        const intervalTime = 40; // update frequency
+        const duration = 2800; // total duration in ms
+        const steps = duration / intervalTime;
+        const stepIncrement = 100 / steps;
+
+        const loaderInterval = setInterval(() => {
+          progress += stepIncrement;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(loaderInterval);
+            // Redirect
+            window.location.href = authRedirect;
+          }
+
+          progressFill.style.width = progress + '%';
+
+          // Dynamic status messages based on progress
+          if (isRegister) {
+            if (progress < 30) {
+              title.textContent = 'Verifying Details...';
+              desc.textContent = 'Validating registration parameters...';
+            } else if (progress < 65) {
+              title.textContent = 'Creating Account...';
+              desc.textContent = 'Initializing secure workspace database...';
+            } else if (progress < 90) {
+              title.textContent = 'Securing Session...';
+              desc.textContent = 'Generating encrypted credentials...';
+            } else {
+              title.textContent = 'Welcome Aboard!';
+              desc.textContent = 'Redirecting to your dashboard...';
+            }
+          } else {
+            if (progress < 40) {
+              title.textContent = 'Verifying Credentials...';
+              desc.textContent = 'Establishing secure handshake...';
+            } else if (progress < 75) {
+              title.textContent = 'Authenticating User...';
+              desc.textContent = 'Checking database records...';
+            } else if (progress < 92) {
+              title.textContent = 'Session Established...';
+              desc.textContent = 'Preparing your customized interface...';
+            } else {
+              title.textContent = 'Authorized!';
+              desc.textContent = 'Taking you to dashboard...';
+            }
+          }
+        }, intervalTime);
+
+        return;
+      }
+
       // Handle auto-trigger markers from bot
       if (replyText.includes('[TRIGGER_FILE_UPLOAD]')) {
         replyText = replyText.replace('[TRIGGER_FILE_UPLOAD]', '');
@@ -1305,6 +1625,15 @@ if (!function_exists('formatChatMessage')) {
     inputBox.value = text;
     inputBox.dispatchEvent(new Event('input'));
     sendMessage();
+  }
+
+  function sendAuthQuick(type) {
+    const messages = {
+      'login': 'I want to log in to my account.',
+      'register': 'I want to create a new account. Register me.',
+      'forgot': 'I forgot my password. Can you help me reset it?'
+    };
+    sendQuick(messages[type] || type);
   }
 
   function startProjectRequest() {
@@ -1400,17 +1729,58 @@ if (!function_exists('formatChatMessage')) {
     }
   }
 
+  function showConfirm(message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-confirm-overlay';
+
+    const card = document.createElement('div');
+    card.className = 'custom-confirm-card';
+
+    const text = document.createElement('div');
+    text.className = 'custom-confirm-text';
+    text.textContent = message;
+
+    const buttons = document.createElement('div');
+    buttons.className = 'custom-confirm-buttons';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'custom-confirm-btn btn-cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => { overlay.remove(); };
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'custom-confirm-btn btn-confirm';
+    confirmBtn.textContent = 'Delete';
+    confirmBtn.onclick = () => {
+      overlay.remove();
+      onConfirm();
+    };
+
+    buttons.appendChild(cancelBtn);
+    buttons.appendChild(confirmBtn);
+    card.appendChild(text);
+    card.appendChild(buttons);
+    overlay.appendChild(card);
+
+    const assistantBox = document.getElementById('assistantBox');
+    if (assistantBox) {
+      assistantBox.appendChild(overlay);
+    } else {
+      document.body.appendChild(overlay);
+    }
+  }
+
   async function deleteSession(e, sessionId) {
     e.stopPropagation();
-    if(!confirm("Delete this chat?")) return;
-    
-    try {
-      await fetch(pathToRoot + 'agent-server.php', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ action: 'delete_session', target_session: sessionId })
-      });
-      loadHistorySessions(); // refresh list
-    } catch (err) {}
+    showConfirm("Are you sure you want to delete this chat session?", async () => {
+      try {
+        await fetch(pathToRoot + 'agent-server.php', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ action: 'delete_session', target_session: sessionId })
+        });
+        loadHistorySessions(); // refresh list
+      } catch (err) {}
+    });
   }
 
   async function loadSessionHistory(sessionId) {

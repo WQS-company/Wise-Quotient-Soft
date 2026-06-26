@@ -593,6 +593,10 @@ if ($action === 'voice_chat') {
 
 // === Action: get_stats ===
 if ($action === 'get_stats') {
+    if (!isset($_SESSION['user']['role']) || strtolower($_SESSION['user']['role']) !== 'admin') {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized access.']);
+        exit;
+    }
     try {
         $totalChats = $pdo->query("SELECT COUNT(*) FROM voice_conversations")->fetchColumn();
         $totalMinutes = $pdo->query("SELECT COALESCE(SUM(audio_duration), 0) FROM voice_conversations")->fetchColumn();

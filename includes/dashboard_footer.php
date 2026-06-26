@@ -79,24 +79,7 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Mobile Navigation Sidebar Close on Outside Click -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const sidebar = document.getElementById("sidebar");
-    const toggleBtn = document.getElementById("sidebarToggle");
-    
-    if (toggleBtn && sidebar) {
-        // Close sidebar if clicked outside on mobile viewports
-        document.addEventListener("click", function(e) {
-            if (window.innerWidth < 992 && sidebar.classList.contains("show")) {
-                if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
-                    sidebar.classList.remove("show");
-                }
-            }
-        });
-    }
-});
-</script>
+<!-- Sidebar close handled in dashboard_header.php -->
 
 <?php
 // Embed wise-bot chatbot assistant if present

@@ -125,12 +125,9 @@ if ($action === 'fetch_session_history') {
              echo json_encode(['success' => false, 'error' => 'Session not found']); exit;
         }
 
-        $stmt = $pdo->prepare("SELECT role, message, created_at FROM bot_chats WHERE session_id = ? AND is_deleted_by_user = 0 ORDER BY created_at ASC");
-        $stmt->execute([$targetSession]);
+        $stmt = $pdo->prepare("SELECT role, message, created_at FROM bot_chats WHERE session_id = ? AND user_id = ? AND is_deleted_by_user = 0 ORDER BY created_at ASC");
+        $stmt->execute([$targetSession, $uid]);
         $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Update current session to be this one so they can resume
-        session_id($targetSession); 
         
         echo json_encode(['success' => true, 'history' => $history]);
     } catch (Exception $e) {
@@ -187,11 +184,33 @@ if ($action === 'set_typing_status') {
 if ($action === 'poll_chat_updates') {
     $targetSession = $input['target_session'] ?? session_id();
     $lastId = $input['last_id'] ?? 0;
+    $convId = $input['conversation_id'] ?? '';
+    
+    // Auth: must be logged in and polling own session
+    if (!isset($_SESSION['user']['id'])) {
+        echo json_encode(['success' => false, 'error' => 'Not logged in']); exit;
+    }
+    $uid = $_SESSION['user']['id'];
+    
+    // Verify session belongs to user (or is their own current session)
+    $ownSession = ($targetSession === session_id());
+    if (!$ownSession) {
+        $chk = $pdo->prepare("SELECT 1 FROM bot_chat_sessions WHERE session_id = ? AND user_id = ?");
+        $chk->execute([$targetSession, $uid]);
+        if (!$chk->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']); exit;
+        }
+    }
     
     try {
-        // Fetch new messages
-        $stmt = $pdo->prepare("SELECT id, role, message, created_at FROM bot_chats WHERE session_id = ? AND is_deleted_by_user = 0 AND id > ? ORDER BY id ASC");
-        $stmt->execute([$targetSession, $lastId]);
+        // Fetch new messages — scoped by session, user ownership, and optionally conversation_id
+        if ($convId) {
+            $stmt = $pdo->prepare("SELECT id, role, message, created_at FROM bot_chats WHERE conversation_id = ? AND user_id = ? AND is_deleted_by_user = 0 AND id > ? ORDER BY id ASC");
+            $stmt->execute([$convId, $uid, $lastId]);
+        } else {
+            $stmt = $pdo->prepare("SELECT id, role, message, created_at FROM bot_chats WHERE session_id = ? AND user_id = ? AND is_deleted_by_user = 0 AND id > ? ORDER BY id ASC");
+            $stmt->execute([$targetSession, $uid, $lastId]);
+        }
         $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Fetch typing status
@@ -205,24 +224,7 @@ if ($action === 'poll_chat_updates') {
         $stmtTyping->execute([$targetSession]);
         $typingRoles = $stmtTyping->fetchAll(PDO::FETCH_COLUMN);
         
-        // Check online status if admin is polling
-        $isOnline = false;
-        $stmtUid = $pdo->prepare("SELECT user_id FROM bot_chats WHERE session_id = ? AND user_id IS NOT NULL LIMIT 1");
-        $stmtUid->execute([$targetSession]);
-        $uidRow = $stmtUid->fetch(PDO::FETCH_ASSOC);
-        if ($uidRow && $uidRow['user_id']) {
-            $uStmt = $pdo->prepare("SELECT last_login FROM users WHERE id = ?");
-            $uStmt->execute([$uidRow['user_id']]);
-            $user = $uStmt->fetch(PDO::FETCH_ASSOC);
-            if ($user && $user['last_login']) {
-                $lastActive = strtotime($user['last_login']);
-                if (time() - $lastActive < 300) {
-                    $isOnline = true;
-                }
-            }
-        }
-        
-        echo json_encode(['success' => true, 'messages' => $messages, 'typing' => $typingRoles, 'is_online' => $isOnline]);
+        echo json_encode(['success' => true, 'messages' => $messages, 'typing' => $typingRoles]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
@@ -231,40 +233,43 @@ if ($action === 'poll_chat_updates') {
 
 if ($action === 'get_chat_meta') {
     $targetSession = $input['target_session'] ?? session_id();
-    try {
-        // Find user_id from bot_chats
-        $stmt = $pdo->prepare("SELECT user_id FROM bot_chats WHERE session_id = ? AND user_id IS NOT NULL LIMIT 1");
-        $stmt->execute([$targetSession]);
-        $uidRow = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($uidRow && $uidRow['user_id']) {
-            $uStmt = $pdo->prepare("SELECT name, email, last_login FROM users WHERE id = ?");
-            $uStmt->execute([$uidRow['user_id']]);
-            $user = $uStmt->fetch(PDO::FETCH_ASSOC);
-            
-            // Check if online (active within last 5 mins)
-            $isOnline = false;
-            if ($user && $user['last_login']) {
-                $lastActive = strtotime($user['last_login']);
-                if (time() - $lastActive < 300) {
-                    $isOnline = true;
-                }
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'name' => $user['name'] ?? 'Guest',
-                'email' => $user['email'] ?? '',
-                'is_online' => $isOnline
-            ]);
-        } else {
-            echo json_encode([
-                'success' => true,
-                'name' => 'Guest User',
-                'email' => '',
-                'is_online' => false
-            ]);
+    
+    // Auth: must be logged in
+    if (!isset($_SESSION['user']['id'])) {
+        echo json_encode(['success' => false, 'error' => 'Not logged in']); exit;
+    }
+    $uid = $_SESSION['user']['id'];
+    
+    // Verify session belongs to user
+    $ownSession = ($targetSession === session_id());
+    if (!$ownSession) {
+        $chk = $pdo->prepare("SELECT 1 FROM bot_chat_sessions WHERE session_id = ? AND user_id = ?");
+        $chk->execute([$targetSession, $uid]);
+        if (!$chk->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']); exit;
         }
+    }
+    
+    try {
+        // Only return name/email of THIS user (not other users)
+        $uStmt = $pdo->prepare("SELECT name, email, last_login FROM users WHERE id = ?");
+        $uStmt->execute([$uid]);
+        $user = $uStmt->fetch(PDO::FETCH_ASSOC);
+        
+        $isOnline = false;
+        if ($user && $user['last_login']) {
+            $lastActive = strtotime($user['last_login']);
+            if (time() - $lastActive < 300) {
+                $isOnline = true;
+            }
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'name' => $user['name'] ?? 'Guest',
+            'email' => $user['email'] ?? '',
+            'is_online' => $isOnline
+        ]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
@@ -704,6 +709,8 @@ if ($user_id) {
     try {
         $bridgeStmt = $pdo->prepare("UPDATE bot_chats SET user_id = ? WHERE session_id = ? AND user_id IS NULL");
         $bridgeStmt->execute([$user_id, $session_id]);
+        $bridgeSessStmt = $pdo->prepare("UPDATE bot_chat_sessions SET user_id = ? WHERE session_id = ? AND user_id IS NULL");
+        $bridgeSessStmt->execute([$user_id, $session_id]);
     } catch (Exception $e) {
         // Fail-safe
     }
@@ -811,6 +818,8 @@ if ($user_id) {
     }
 } else {
     $user_context = "User is browsing as a Guest (not logged in).\n";
+    $user_context .= "IMPORTANT: This user is a guest. They can register, log in, or reset their password directly through this chat.\n";
+    $user_context .= "When they express auth intent, guide them through the process conversationally and use the appropriate markers.\n";
 }
 
 // === Process File Upload (If Any) ===
@@ -927,17 +936,28 @@ if ($user_id && ($emergencyRequest || ($connectRequest && $is_critical) || $is_c
     } catch (Exception $e) {}
 }
 
-// Fetch conversation context history (last 15 messages)
+// Fetch conversation context history (last 15 messages) — scoped to current user only
 $history = [];
 try {
-    $histStmt = $pdo->prepare("
-        SELECT role, message FROM (
-            SELECT role, message, created_at FROM bot_chats 
-            WHERE (session_id = ? OR (user_id IS NOT NULL AND user_id = ?)) AND is_deleted_by_user = 0
-            ORDER BY created_at DESC LIMIT 15
-        ) tmp ORDER BY created_at ASC
-    ");
-    $histStmt->execute([$session_id, $user_id]);
+    if ($user_id) {
+        $histStmt = $pdo->prepare("
+            SELECT role, message FROM (
+                SELECT role, message, created_at FROM bot_chats 
+                WHERE user_id = ? AND is_deleted_by_user = 0
+                ORDER BY created_at DESC LIMIT 15
+            ) tmp ORDER BY created_at ASC
+        ");
+        $histStmt->execute([$user_id]);
+    } else {
+        $histStmt = $pdo->prepare("
+            SELECT role, message FROM (
+                SELECT role, message, created_at FROM bot_chats 
+                WHERE session_id = ? AND user_id IS NULL AND is_deleted_by_user = 0
+                ORDER BY created_at DESC LIMIT 15
+            ) tmp ORDER BY created_at ASC
+        ");
+        $histStmt->execute([$session_id]);
+    }
     $history = $histStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $history = [['role' => 'user', 'message' => $userMessage]];
@@ -1113,6 +1133,33 @@ $systemPrompt .= "    - Step B (PREVIEW): Show them a clean summary of their con
 $systemPrompt .= "    - Step C (CONFIRM): Ask if they want you to submit this to the team. If they say yes, add EXACTLY this JSON at the end:\n";
 $systemPrompt .= "      [SUBMIT_CONTACT: {\"name\":\"...\", \"email\":\"...\", \"phone\":\"...\", \"service\":\"...\", \"budget\":\"...\", \"timeline\":\"...\", \"message\":\"...\", \"company\":\"...\"}]\n";
 $systemPrompt .= "    - The system will submit their message to the Contact form and return a reference number.\n\n";
+$systemPrompt .= "20. **GUEST AUTH ASSISTANT (REGISTER / LOGIN / FORGOT PASSWORD)** — You can help guest users authenticate directly through the chat.\n";
+$systemPrompt .= "    - This ONLY applies to guests (not logged in). If the user is logged in, do NOT offer registration or login.\n";
+$systemPrompt .= "    - Detect auth intent from phrases like: 'register me', 'create an account', 'sign me up', 'login', 'log in', 'help me login', 'forgot password', 'reset password', 'I can't login', 'I want to join', 'open account', 'make an account', 'I need an account'.\n";
+$systemPrompt .= "    - **GREETING**: When a guest first opens the chat, greet them warmly: '👋 Welcome to Wise Quotient Soft! I can help you create an account, log in, reset your password, or answer any questions about our services.' Then show quick action buttons for Login, Register, and Forgot Password.\n";
+$systemPrompt .= "    - **REGISTRATION WORKFLOW**:\n";
+$systemPrompt .= "      1. Respond enthusiastically: 'I'd be happy to help you create your Wise Quotient Soft account!'\n";
+$systemPrompt .= "      2. Ask for Full Name first. After they reply, ask for Email. Then Phone. Then Password. Then Referral Code (optional — they can skip).\n";
+$systemPrompt .= "      3. At each step, validate the input (email format, phone digits, password strength).\n";
+$systemPrompt .= "      4. After collecting all info, show a clean preview with all details listed, then ask: 'Please review the details above. Shall I create your account?'\n";
+$systemPrompt .= "      5. Only on explicit confirmation (yes, create, go ahead, do it), add at the end of your response:\n";
+$systemPrompt .= "         [CHAT_REGISTER: {\"name\":\"...\", \"email\":\"...\", \"phone\":\"...\", \"password\":\"...\", \"referred_by\":\"...\"}]\n";
+$systemPrompt .= "      6. DO NOT include the actual password in the preview. Mask it as '••••••••'.\n";
+$systemPrompt .= "      7. The system will handle registration, create the session, and return success/failure.\n";
+$systemPrompt .= "    - **LOGIN WORKFLOW**:\n";
+$systemPrompt .= "      1. Ask for their Email or Phone Number. After they reply, ask for their Password.\n";
+$systemPrompt .= "      2. After collecting both, show a confirmation: 'Logging you in with [email/phone]...'\n";
+$systemPrompt .= "      3. Then add at the end of your response:\n";
+$systemPrompt .= "         [CHAT_LOGIN: {\"identifier\":\"...\", \"password\":\"...\"}]\n";
+$systemPrompt .= "      4. The system will authenticate and create the session.\n";
+$systemPrompt .= "    - **FORGOT PASSWORD WORKFLOW**:\n";
+$systemPrompt .= "      1. Ask for their Email Address or Phone Number.\n";
+$systemPrompt .= "      2. Then add at the end of your response:\n";
+$systemPrompt .= "         [CHAT_FORGOT_PASSWORD: {\"identifier\":\"...\"}]\n";
+$systemPrompt .= "      3. The system will send reset instructions if the account exists.\n";
+$systemPrompt .= "    - **CONTEXT SWITCHING**: If a guest starts registration but then says 'I already have an account' or 'actually let me log in', immediately switch to the Login workflow. Don't restart — adapt.\n";
+$systemPrompt .= "    - **QUICK LINKS**: At any point, you can direct them to the traditional pages: 'Prefer to do it yourself? Visit our [Login](login.php) or [Register](register.php) page.'\n";
+$systemPrompt .= "    - **NEVER** expose passwords, tokens, database errors, or API details in your responses.\n\n";
 
 // Build messages array for OpenRouter
 $messages = [];
@@ -1314,8 +1361,8 @@ if ($user_id && preg_match('/\[CREATE_REQUEST:\s*(\{.+?\})\]/s', $reply, $match)
 // If not found in current reply, scan chat history for an unprocessed marker
 if ($user_id && !$requestCreated) {
     try {
-        $histCheck = $pdo->prepare("SELECT id, message FROM bot_chats WHERE (session_id = ? OR user_id = ?) AND role = 'assistant' AND is_critical = 0 ORDER BY created_at DESC LIMIT 10");
-        $histCheck->execute([$session_id, $user_id]);
+        $histCheck = $pdo->prepare("SELECT id, message FROM bot_chats WHERE user_id = ? AND role = 'assistant' AND is_critical = 0 ORDER BY created_at DESC LIMIT 10");
+        $histCheck->execute([$user_id]);
         $recentBots = $histCheck->fetchAll(PDO::FETCH_ASSOC);
         foreach ($recentBots as $hb) {
             $updated = false;
@@ -1953,6 +2000,203 @@ if (preg_match('/\[SUBMIT_CONTACT:\s*(\{.+?\})\]/s', $reply, $scMatch)) {
         } else {
             $reply .= "\n\n⚠️ Missing required fields (Name, Email, or Message). Please provide them so I can submit the form.";
         }
+    }
+}
+
+// [CHAT_REGISTER: {...}] - Guest in-chat registration (inline, no curl)
+if (!$user_id && preg_match('/\[CHAT_REGISTER:\s*(\{.+?\})\]/s', $reply, $crMatch)) {
+    $crData = json_decode($crMatch[1], true);
+    if ($crData && !empty($crData['name']) && !empty($crData['email']) && !empty($crData['password'])) {
+        $reply = str_replace($crMatch[0], '', $reply);
+        $crName = trim($crData['name'] ?? '');
+        $crEmail = trim($crData['email'] ?? '');
+        $crPhone = trim($crData['phone'] ?? '');
+        $crPass = $crData['password'] ?? '';
+        $crRef = trim($crData['referred_by'] ?? '');
+
+        $crErrors = [];
+        if (strlen($crName) < 2) $crErrors[] = 'Name must be at least 2 characters.';
+        if (!filter_var($crEmail, FILTER_VALIDATE_EMAIL)) $crErrors[] = 'Invalid email format.';
+        if (empty($crPhone)) $crErrors[] = 'Phone number is required.';
+        if (strlen($crPass) < 6) $crErrors[] = 'Password must be at least 6 characters.';
+        if (!preg_match('/[A-Za-z]/', $crPass) || !preg_match('/[0-9]/', $crPass)) $crErrors[] = 'Password must contain letters and numbers.';
+
+        if (!empty($crErrors)) {
+            $reply .= "\n\n⚠️ " . implode(' ', $crErrors);
+        } else {
+            // Normalize phone
+            $crDigits = preg_replace('/[^0-9]/', '', $crPhone);
+            if (strpos($crDigits, '234') === 0) { $crPhone = '0' . substr($crDigits, 3); }
+            elseif (strpos($crDigits, '0') !== 0) { $crPhone = '0' . $crDigits; }
+            else { $crPhone = $crDigits; }
+
+            // Check duplicate email
+            $crChk = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $crChk->execute([$crEmail]);
+            if ($crChk->rowCount() > 0) {
+                $reply .= "\n\n⚠️ An account with this email already exists. Would you like to [log in](login.php) instead?";
+            } else {
+                // Check duplicate phone
+                $crPhChk = $pdo->prepare("SELECT id FROM users WHERE phone = ?");
+                $crPhChk->execute([$crPhone]);
+                if ($crPhChk->rowCount() > 0) {
+                    $reply .= "\n\n⚠️ An account with this phone number already exists. Would you like to [log in](login.php) instead?";
+                } else {
+                    // Handle referral
+                    $crReferredBy = null;
+                    $crRefCode = null;
+                    if (!empty($crRef) && preg_match('/^WQS-[A-F0-9]{8,12}$/i', strtoupper($crRef))) {
+                        $safeRef = strtoupper($crRef);
+                        $refRow = $pdo->prepare("SELECT id FROM users WHERE referral_code = ? AND role != 'admin'");
+                        $refRow->execute([$safeRef]);
+                        if ($refRow->rowCount() > 0) {
+                            $rr = $refRow->fetch(PDO::FETCH_ASSOC);
+                            $crReferredBy = (int)$rr['id'];
+                            $crRefCode = $safeRef;
+                        }
+                    }
+
+                    // Generate unique referral code
+                    do {
+                        $crCandidate = 'WQS-' . strtoupper(bin2hex(random_bytes(6)));
+                        $crCodeChk = $pdo->prepare("SELECT COUNT(*) as cnt FROM users WHERE referral_code = ?");
+                        $crCodeChk->execute([$crCandidate]);
+                        $crCodeRow = $crCodeChk->fetch(PDO::FETCH_ASSOC);
+                    } while ($crCodeRow && $crCodeRow['cnt'] > 0);
+
+                    $crHashedPass = password_hash($crPass, PASSWORD_DEFAULT);
+                    $crUA = $_SERVER['HTTP_USER_AGENT'] ?? '';
+                    $crIP = $_SERVER['REMOTE_ADDR'] ?? '';
+
+                    $crIns = $pdo->prepare("INSERT INTO users (name, email, phone, password, provider, picture, role, last_login, user_agent, ip_address, referred_by, referral_code, referred_by_code)
+                                            VALUES (?, ?, ?, ?, 'form', '', 'user', NOW(), ?, ?, ?, ?, ?)");
+                    if ($crIns->execute([$crName, $crEmail, $crPhone, $crHashedPass, $crUA, $crIP, $crReferredBy, $crCandidate, $crRefCode])) {
+                        $crUserId = (int)$pdo->lastInsertId();
+                        add_notification($crUserId, "Welcome to Wise Quotient Soft!", "Hello " . htmlspecialchars($crName) . ", welcome to your dashboard.", 'welcome', '../user/dashboard.php');
+
+                        // Auto-login
+                        $_SESSION['user'] = [
+                            "id" => $crUserId,
+                            "name" => $crName,
+                            "email" => $crEmail,
+                            "provider" => 'form',
+                            "picture" => '',
+                            "last_login" => date("Y-m-d H:i:s"),
+                            "role" => 'user'
+                        ];
+
+                        $pdo->prepare("INSERT INTO login_logs (user_id, login_time, ip_address, user_agent, browser_type, login_type) VALUES (?, NOW(), ?, ?, '', 'chat')")
+                            ->execute([$crUserId, $crIP, $crUA]);
+
+                        $reply .= "\n\n🎉 **Congratulations!** Your account has been created successfully!\n\nYou are now logged in. Welcome to Wise Quotient Soft, " . htmlspecialchars($crName) . "!\n\n[CHAT_AUTH_SUCCESS: user/dashboard.php]";
+                    } else {
+                        $reply .= "\n\n⚠️ Registration failed due to a system error. Please try again or use the [Register page](register.php).";
+                        @file_put_contents(__DIR__ . '/bot_errors.log', "[" . date('Y-m-d H:i:s') . "] CHAT_REGISTER DB insert failed\n", FILE_APPEND | LOCK_EX);
+                    }
+                }
+            }
+        }
+    } else {
+        $reply = str_replace($crMatch[0], '', $reply);
+        $reply .= "\n\n⚠️ I need all required details to register you. Please provide your full name, email, phone, and password.";
+    }
+}
+
+// [CHAT_LOGIN: {...}] - Guest in-chat login (inline, no curl)
+if (!$user_id && preg_match('/\[CHAT_LOGIN:\s*(\{.+?\})\]/s', $reply, $clMatch)) {
+    $clData = json_decode($clMatch[1], true);
+    if ($clData && !empty($clData['identifier']) && !empty($clData['password'])) {
+        $reply = str_replace($clMatch[0], '', $reply);
+        $clIdentifier = trim($clData['identifier']);
+        $clPassword = $clData['password'];
+        $clIsEmail = filter_var($clIdentifier, FILTER_VALIDATE_EMAIL);
+
+        $clPlaceholders = ["email = ?"];
+        $clParams = [$clIdentifier];
+        if (!$clIsEmail) {
+            $clDigits = preg_replace('/[^0-9]/', '', $clIdentifier);
+            $clVariants = [$clDigits];
+            if (strpos($clDigits, '234') === 0) { $clVariants[] = '0' . substr($clDigits, 3); $clVariants[] = substr($clDigits, 3); }
+            elseif (strpos($clDigits, '0') === 0) { $clVariants[] = '234' . substr($clDigits, 1); $clVariants[] = substr($clDigits, 1); }
+            else { $clVariants[] = '0' . $clDigits; $clVariants[] = '234' . $clDigits; }
+            $clVariants = array_unique($clVariants);
+            foreach ($clVariants as $cv) { $clPlaceholders[] = "phone = ?"; $clParams[] = $cv; }
+        }
+
+        $clStmt = $pdo->prepare("SELECT * FROM users WHERE " . implode(' OR ', $clPlaceholders) . " LIMIT 1");
+        $clStmt->execute($clParams);
+        $clUser = $clStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($clUser && password_verify($clPassword, $clUser['password'])) {
+            $clUA = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $clIP = $_SERVER['REMOTE_ADDR'] ?? '';
+
+            $pdo->prepare("UPDATE users SET last_login = NOW(), user_agent = ?, ip_address = ? WHERE id = ?")
+                ->execute([$clUA, $clIP, $clUser['id']]);
+            $pdo->prepare("INSERT INTO login_logs (user_id, login_time, ip_address, user_agent, browser_type, login_type) VALUES (?, NOW(), ?, ?, '', 'chat')")
+                ->execute([$clUser['id'], $clIP, $clUA]);
+
+            $_SESSION['user'] = [
+                "id" => $clUser['id'],
+                "name" => $clUser['name'],
+                "email" => $clUser['email'],
+                "provider" => $clUser['provider'],
+                "picture" => $clUser['picture'],
+                "last_login" => date("Y-m-d H:i:s"),
+                "role" => $clUser['role']
+            ];
+
+            $clRedirect = in_array($clUser['role'], ['admin','ceo','manager','sales','support','finance','secretary','developer']) ? 'admin/dashboard.php' : 'user/dashboard.php';
+            $reply .= "\n\n✅ **Login successful!** Welcome back, " . htmlspecialchars($clUser['name']) . "!\n\n[CHAT_AUTH_SUCCESS: $clRedirect]";
+        } else {
+            $reply .= "\n\n⚠️ Invalid email/phone or password. Please try again.";
+        }
+    } else {
+        $reply = str_replace($clMatch[0], '', $reply);
+        $reply .= "\n\n⚠️ I need both your email/phone and password to log you in.";
+    }
+}
+
+// [CHAT_FORGOT_PASSWORD: {...}] - Guest password reset (inline, no curl)
+if (!$user_id && preg_match('/\[CHAT_FORGOT_PASSWORD:\s*(\{.+?\})\]/s', $reply, $cfMatch)) {
+    $cfData = json_decode($cfMatch[1], true);
+    if ($cfData && !empty($cfData['identifier'])) {
+        $reply = str_replace($cfMatch[0], '', $reply);
+        $cfIdentifier = trim($cfData['identifier']);
+        $cfIsEmail = filter_var($cfIdentifier, FILTER_VALIDATE_EMAIL);
+
+        $cfPlaceholders = ["email = ?"];
+        $cfParams = [$cfIdentifier];
+        if (!$cfIsEmail) {
+            $cfDigits = preg_replace('/[^0-9]/', '', $cfIdentifier);
+            $cfVariants = [$cfDigits];
+            if (strpos($cfDigits, '234') === 0) { $cfVariants[] = '0' . substr($cfDigits, 3); $cfVariants[] = substr($cfDigits, 3); }
+            elseif (strpos($cfDigits, '0') === 0) { $cfVariants[] = '234' . substr($cfDigits, 1); $cfVariants[] = substr($cfDigits, 1); }
+            else { $cfVariants[] = '0' . $cfDigits; $cfVariants[] = '234' . $cfDigits; }
+            $cfVariants = array_unique($cfVariants);
+            foreach ($cfVariants as $cv) { $cfPlaceholders[] = "phone = ?"; $cfParams[] = $cv; }
+        }
+
+        $cfStmt = $pdo->prepare("SELECT id, name, email FROM users WHERE " . implode(' OR ', $cfPlaceholders) . " LIMIT 1");
+        $cfStmt->execute($cfParams);
+        $cfUser = $cfStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($cfUser) {
+            try {
+                $resetToken = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+                $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, token VARCHAR(64) NOT NULL, expires_at DATETIME NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX idx_token (token), INDEX idx_user (user_id))");
+                $pdo->prepare("INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)")->execute([$cfUser['id'], $resetToken, $expires]);
+                $resetUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/reset-password.php?token=' . $resetToken;
+                $subject = "WQS - Password Reset Request";
+                $body = "Hello " . htmlspecialchars($cfUser['name']) . ",\n\nClick the link below to reset your password:\n$resetUrl\n\nThis link expires in 1 hour.\n\nBest regards,\nWise Quotient Soft Team";
+                @mail($cfUser['email'], $subject, $body, "From: noreply@wisequotientsoft.com\r\n");
+            } catch (Exception $e) {}
+        }
+        $reply .= "\n\n📧 We've sent password reset instructions to your registered email if an account exists. Please check your inbox.";
+    } else {
+        $reply = str_replace($cfMatch[0], '', $reply);
+        $reply .= "\n\n⚠️ Please provide your email address or phone number so I can send reset instructions.";
     }
 }
 
