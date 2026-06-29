@@ -87,7 +87,11 @@ class AdPlacer {
             $bgImg = $p . $bgImg;
         }
         $btnText = htmlspecialchars($ad['button_text'] ?? 'Learn More');
-        $btnUrl = htmlspecialchars($ad['button_url'] ?? '#');
+        $btnUrl = $ad['button_url'] ?? '#';
+        if ($btnUrl && $btnUrl !== '#' && !preg_match('/^(https?:\/\/|mailto:|tel:|\/|#)/i', $btnUrl)) {
+            $btnUrl = $p . $btnUrl;
+        }
+        $btnUrl = htmlspecialchars($btnUrl);
         $pc = htmlspecialchars($ad['primary_color'] ?? '#10b981');
         $sc = htmlspecialchars($ad['secondary_color'] ?? '#059669');
         $tc = htmlspecialchars($ad['text_color'] ?? '#ffffff');

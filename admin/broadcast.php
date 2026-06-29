@@ -32,7 +32,9 @@ try {
         'broadcast_smtp_user' => '',
         'broadcast_smtp_pass' => '',
         'broadcast_smtp_from_email' => 'no-reply@wqs.com',
-        'broadcast_smtp_from_name' => 'WQS Admin'
+        'broadcast_smtp_from_name' => 'WQS Admin',
+        'forgot_password_email_method' => 'smtp',
+        'forgot_password_use_sms' => '0'
     ];
     $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM footer_settings WHERE setting_key = ?");
     $insertStmt = $pdo->prepare("INSERT INTO footer_settings (setting_key, setting_value) VALUES (?, ?)");
@@ -71,7 +73,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['ajax_action'])) {
     header('Content-Type: application/json');
 
     if ($_POST['ajax_action'] === 'save_gateway_settings') {
-        $keys = ['broadcast_termii_api_key', 'broadcast_termii_sender_id', 'broadcast_termii_base_url', 'broadcast_termii_channel', 'broadcast_smtp_host', 'broadcast_smtp_port', 'broadcast_smtp_secure', 'broadcast_smtp_user', 'broadcast_smtp_pass', 'broadcast_smtp_from_email', 'broadcast_smtp_from_name'];
+        $keys = [
+            'broadcast_termii_api_key', 'broadcast_termii_sender_id', 'broadcast_termii_base_url', 'broadcast_termii_channel', 
+            'broadcast_smtp_host', 'broadcast_smtp_port', 'broadcast_smtp_secure', 'broadcast_smtp_user', 'broadcast_smtp_pass', 
+            'broadcast_smtp_from_email', 'broadcast_smtp_from_name',
+            'forgot_password_email_method', 'forgot_password_use_sms'
+        ];
         try {
             $stmt = $pdo->prepare("UPDATE footer_settings SET setting_value = ? WHERE setting_key = ?");
             foreach ($keys as $k) {
@@ -444,6 +451,29 @@ $typeColors = ['info'=>['#eff6ff','#1d4ed8','fas fa-info-circle'],'warning'=>['#
                     <div class="d-flex align-items-center gap-2">
                         <input type="email" id="test_smtp_email" class="form-control form-control-sm" placeholder="Test email address">
                         <button type="button" class="btn btn-sm btn-outline-primary fw-bold text-nowrap" onclick="testSMTP()"><i class="fas fa-paper-plane me-1"></i>Test Email</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forgot Password Settings Card -->
+            <div style="background:white;border-radius:20px;border:1.5px solid rgba(0,0,0,0.06);box-shadow:0 4px 20px rgba(0,0,0,0.04);padding:2rem;margin-bottom:1.5rem;">
+                <h5 class="fw-bold text-body mb-4"><i class="fas fa-key me-2 text-warning"></i>Forgot Password Settings</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Email Sending Method</label>
+                        <select class="form-select" name="forgot_password_email_method">
+                            <option value="smtp" <?= ($settings['forgot_password_email_method']??'smtp')=='smtp'?'selected':'' ?>>SMTP Gateway</option>
+                            <option value="mail" <?= ($settings['forgot_password_email_method']??'')=='mail'?'selected':'' ?>>PHP mail() Function</option>
+                        </select>
+                        <div class="form-text small text-muted">Choose how reset password emails should be dispatched.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">SMS Integration (Termii)</label>
+                        <select class="form-select" name="forgot_password_use_sms">
+                            <option value="0" <?= ($settings['forgot_password_use_sms']??'0')=='0'?'selected':'' ?>>Email Only (No SMS)</option>
+                            <option value="1" <?= ($settings['forgot_password_use_sms']??'')=='1'?'selected':'' ?>>Email & SMS (via Termii)</option>
+                        </select>
+                        <div class="form-text small text-muted">Enable or disable SMS OTP alongside password reset link.</div>
                     </div>
                 </div>
             </div>

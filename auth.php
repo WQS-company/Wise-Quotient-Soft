@@ -224,6 +224,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['identifier'], $_POST[
             ];
 
             $redirect_url = ($user['role'] === 'admin') ? 'admin/dashboard.php' : 'user/dashboard.php';
+            if (isset($_SESSION['redirect_url'])) {
+                $redirect_url = $_SESSION['redirect_url'];
+                unset($_SESSION['redirect_url']);
+            }
 
             echo json_encode([
                 "success" => true,
@@ -407,6 +411,10 @@ function saveOAuthUser($name, $email, $provider, $picture = '') {
                 VALUES (?, NOW(), ?, ?, ?, ?)")->execute([$user['id'], $ip_address, $user_agent, $browser_type, $provider]);
 
     $redirect = ($user['role'] === 'user') ? 'user/dashboard.php' : 'admin/dashboard.php';
+    if (isset($_SESSION['redirect_url'])) {
+        $redirect = $_SESSION['redirect_url'];
+        unset($_SESSION['redirect_url']);
+    }
     header("Location: $redirect");
     exit;
 }

@@ -3,8 +3,10 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
-$input = json_decode(file_get_contents('php://input'), true);
-$action = $input['action'] ?? $_POST['action'] ?? $_GET['action'] ?? '';
+$json_input = json_decode(file_get_contents('php://input'), true) ?? [];
+if (!is_array($json_input)) $json_input = [];
+$input = array_merge($_POST, $_GET, $json_input);
+$action = $input['action'] ?? '';
 
 function jsonResponse($data, $code = 200) {
     http_response_code($code);
@@ -558,7 +560,7 @@ switch ($action) {
             $stmt->execute([$code, $email]);
             $app = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$app) jsonResponse(['success' => false, 'error' => 'Application not found'], 404);
-            jsonResponse(['success' => true, 'data' => $app]);
+            jsonResponse(['success' => true, 'data' => $app, 'application' => $app]);
         } catch (Exception $e) { jsonResponse(['success' => false, 'error' => $e->getMessage()], 500); }
         break;
 

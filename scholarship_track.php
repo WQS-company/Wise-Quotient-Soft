@@ -459,7 +459,7 @@ require_once $path_to_root . 'config.php';
                     document.getElementById('res_name').textContent = app.full_name || app.name || '-';
                     document.getElementById('res_scholarship').textContent = app.scholarship_title || app.scholarship || '-';
                     document.getElementById('res_status').textContent = app.status || '-';
-                    document.getElementById('res_date').textContent = app.submission_date || app.created_at || '-';
+                    document.getElementById('res_date').textContent = app.submission_date || app.submitted_at || app.created_at || '-';
 
                     const statusEl = document.getElementById('res_status');
                     const statusLower = (app.status || '').toLowerCase();

@@ -211,6 +211,36 @@ try {
   .pkg-btn:hover::before {
     opacity: 1;
   }
+
+  /* Filter Styles */
+  .filter-btn {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 8px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .filter-btn:hover {
+    background: #f1f5f9;
+    color: #ff6600;
+    border-color: #ff6600;
+    transform: translateY(-1px);
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, #ff6600, #ff8c00);
+    border-color: #ff6600;
+    color: white;
+    box-shadow: 0 8px 20px -6px rgba(255, 102, 0, 0.4);
+  }
+  #pkg-search:focus {
+    border-color: #ff6600 !important;
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15) !important;
+  }
 </style>
 
 <!-- Hero Section -->
@@ -231,6 +261,31 @@ try {
 <!-- Packages Grid -->
 <section class="packages-grid-section">
   <div class="container position-relative" style="z-index: 2;">
+    
+    <!-- Search & Filter Bar -->
+    <div class="filter-wrapper mb-5" style="max-width: 900px; margin: -3.5rem auto 3.5rem auto; position: relative; z-index: 10;">
+        <div class="filter-card" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 24px; padding: 1.5rem; box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.1);">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-5">
+                    <div class="search-box" style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.95rem;"></i>
+                        <input type="text" id="pkg-search" placeholder="Search packages or features..." style="width: 100%; padding: 0.8rem 1rem 0.8rem 3rem; border-radius: 50px; border: 1px solid #e2e8f0; outline: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; font-size: 0.95rem; background: #f8fafc;" onkeyup="filterPackages()">
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="filter-tabs d-flex flex-wrap gap-2 justify-content-lg-end">
+                        <button class="filter-btn active" data-category="all" onclick="setCategoryFilter('all')">All</button>
+                        <button class="filter-btn" data-category="software" onclick="setCategoryFilter('software')">Software</button>
+                        <button class="filter-btn" data-category="web templates" onclick="setCategoryFilter('web templates')">Web Templates</button>
+                        <button class="filter-btn" data-category="mobile apps" onclick="setCategoryFilter('mobile apps')">Mobile Apps</button>
+                        <button class="filter-btn" data-category="ebooks & guides" onclick="setCategoryFilter('ebooks & guides')">eBooks & Guides</button>
+                        <button class="filter-btn" data-category="api services" onclick="setCategoryFilter('api services')">API Services</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php if (empty($packages)): ?>
         <div class="text-center py-6">
             <i class="fas fa-box-open text-muted" style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.5;"></i>
@@ -240,7 +295,7 @@ try {
     <?php else: ?>
         <div class="packages-grid">
             <?php foreach ($packages as $pkg): ?>
-                <div class="pkg-card reveal-up">
+                <div class="pkg-card reveal-up" data-title="<?= htmlspecialchars(strtolower($pkg['title'])) ?>" data-desc="<?= htmlspecialchars(strtolower($pkg['description'] . ' ' . $pkg['features'])) ?>" data-category="<?= htmlspecialchars(strtolower($pkg['category'] ?? 'software')) ?>">
                     <div class="pkg-image-wrapper">
                         <?php if(!empty($pkg['image_path'])): ?>
                             <img src="<?= htmlspecialchars($pkg['image_path']) ?>" alt="<?= htmlspecialchars($pkg['title']) ?>">
@@ -250,13 +305,14 @@ try {
                     </div>
                     
                     <div class="pkg-card-body">
-                        <div>
+                        <div class="d-flex align-items-center mb-3">
                             <?php 
                             $raw_limit = $pkg['time_limit'] ?: 'Lifetime Access';
                             $is_lifetime = (strtolower(trim($raw_limit)) === 'lifetime access' || strtolower(trim($raw_limit)) === 'lifetime');
                             $display_limit = $is_lifetime ? 'Lifetime Access' : 'Expires: ' . $raw_limit;
                             ?>
-                            <span class="pkg-time-limit"><i class="fas <?= $is_lifetime ? 'fa-infinity' : 'fa-clock' ?> me-2"></i> <?= htmlspecialchars($display_limit) ?></span>
+                            <span class="pkg-time-limit mb-0"><i class="fas <?= $is_lifetime ? 'fa-infinity' : 'fa-clock' ?> me-2"></i> <?= htmlspecialchars($display_limit) ?></span>
+                            <span class="badge bg-secondary text-light px-2.5 py-1.5 rounded-pill ms-2" style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85;"><?= htmlspecialchars($pkg['category'] ?? 'Software') ?></span>
                         </div>
                         
                         <h3 class="pkg-title"><?= htmlspecialchars($pkg['title']) ?></h3>
@@ -285,5 +341,67 @@ try {
     <?php endif; ?>
   </div>
 </section>
+
+<script>
+let currentCategory = 'all';
+
+function setCategoryFilter(category) {
+    currentCategory = category;
+    
+    // Update active tab styling
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-category') === category) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    filterPackages();
+}
+
+function filterPackages() {
+    const searchVal = document.getElementById('pkg-search').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.pkg-card');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const title = card.getAttribute('data-title') || '';
+        const desc = card.getAttribute('data-desc') || '';
+        const category = card.getAttribute('data-category') || '';
+        
+        const matchesSearch = title.includes(searchVal) || desc.includes(searchVal);
+        const matchesCategory = currentCategory === 'all' || category === currentCategory;
+        
+        if (matchesSearch && matchesCategory) {
+            card.style.display = 'flex';
+            card.style.opacity = '1';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Handle empty state
+    let emptyState = document.getElementById('no-results-state');
+    if (visibleCount === 0) {
+        if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.id = 'no-results-state';
+            emptyState.className = 'text-center py-5 w-100 mt-4';
+            emptyState.innerHTML = `
+                <i class="fas fa-search-minus text-muted" style="font-size: 3.5rem; margin-bottom: 1.25rem; opacity: 0.5;"></i>
+                <h4 class="fw-bold text-dark mb-2">No packages match your search criteria</h4>
+                <p class="text-muted mx-auto" style="max-width: 400px;">Try adjusting your keywords or switching categories to find what you're looking for.</p>
+            `;
+            document.querySelector('.packages-grid').appendChild(emptyState);
+        }
+    } else {
+        if (emptyState) {
+            emptyState.remove();
+        }
+    }
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/public_footer.php'; ?>

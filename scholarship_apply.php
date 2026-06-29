@@ -2,6 +2,14 @@
 $path_to_root = './';
 session_start();
 require_once $path_to_root . 'config.php';
+
+// Enforce login to apply for scholarships
+if (!isset($_SESSION['user']['id'])) {
+    $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI'];
+    header("Location: login.php?error=" . urlencode("You must log in or create an account to apply for scholarships."));
+    exit;
+}
+
 $scholarship_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 ?>
 <!DOCTYPE html>

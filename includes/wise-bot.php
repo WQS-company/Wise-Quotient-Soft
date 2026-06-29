@@ -83,6 +83,32 @@ if (!function_exists('formatChatMessage')) {
         $escaped = preg_replace('/## (.*?)\n/', '<h5 class="fw-bold my-2" style="color:#0A2D5E;">$1</h5>', $escaped);
         $escaped = preg_replace('/# (.*?)\n/', '<h4 class="fw-bold my-2" style="color:#0A2D5E;">$1</h4>', $escaped);
         
+        // Parse Markdown Images: ![alt](url)
+        $escaped = preg_replace_callback(
+            '/!\[(.*?)\]\((.*?)\)/',
+            function($matches) use ($path_to_root) {
+                $alt = $matches[1];
+                $path = $matches[2];
+                $fullPath = (strpos($path, 'http') === 0) ? $path : $path_to_root . $path;
+                return '<br><img src="' . $fullPath . '" style="max-width:100%; max-height:220px; border-radius:8px; margin-top:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15);" alt="' . htmlspecialchars($alt) . '" />';
+            },
+            $escaped
+        );
+
+        // Parse Markdown Links: [text](url)
+        $escaped = preg_replace_callback(
+            '/\[(.*?)\]\((.*?)\)/',
+            function($matches) use ($path_to_root) {
+                $text = $matches[1];
+                $path = $matches[2];
+                // Decode &amp; to & if present in raw URL matching
+                $path_clean = str_replace('&amp;', '&', $path);
+                $fullPath = (strpos($path_clean, 'http') === 0) ? $path_clean : $path_to_root . $path_clean;
+                return '<a href="' . $fullPath . '" target="_blank" style="color:#ff6600; font-weight:600; text-decoration:underline;">' . $text . '</a>';
+            },
+            $escaped
+        );
+
         // Parse [Attached Image: PATH]
         $escaped = preg_replace_callback(
             '/\[Attached Image:\s*(.*?)\]/', 
@@ -332,8 +358,9 @@ if (!function_exists('formatChatMessage')) {
   .bubble-wrapper {
     display: flex;
     flex-direction: column;
-    margin: 8px 0;
-    max-width: 85%;
+    margin: 6px 0;
+    max-width: 80%;
+    animation: bubbleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
   .bubble-wrapper.user {
@@ -347,37 +374,79 @@ if (!function_exists('formatChatMessage')) {
   }
 
   .bubble {
-    padding: 12px 16px;
-    border-radius: 18px;
+    padding: 10px 16px;
     word-wrap: break-word;
+    word-break: break-word;
     white-space: pre-wrap;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .bubble:hover {
+    transform: translateY(-1px);
   }
 
   .bubble.user {
-    background: #d9f2ff;
-    border-bottom-right-radius: 4px;
+    background: linear-gradient(135deg, #0A2D5E 0%, #1e4f8f 100%);
+    color: #fff;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 2px 12px rgba(10, 45, 94, 0.25);
+  }
+
+  .bubble.user:hover {
+    box-shadow: 0 4px 18px rgba(10, 45, 94, 0.35);
   }
 
   .assistant-dark .bubble.user {
-    background: #3b6ca8;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
   }
 
   .bubble.bot {
-    background: #eeeeee;
-    border-bottom-left-radius: 4px;
+    background: #fff;
+    color: #1e293b;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .bubble.bot:hover {
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.09);
   }
 
   .assistant-dark .bubble.bot {
-    background: #444;
+    background: #1e293b;
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
   }
 
   .msg-time {
-    font-size: 0.7rem;
-    color: #888;
+    font-size: 0.65rem;
+    color: #94a3b8;
     margin-top: 4px;
-    padding: 0 6px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .bubble.user + .msg-time {
+    justify-content: flex-end;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  @keyframes bubbleIn {
+    0% {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   /* History Panel CSS */
@@ -1252,6 +1321,197 @@ if (!function_exists('formatChatMessage')) {
 #endCallBtn:hover {
   transform: scale(1.1);
 }
+
+/* Rich Interactive Cards */
+.wb-rich-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  margin: 8px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.2s;
+  cursor: default;
+}
+.wb-rich-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.1);
+  transform: translateY(-1px);
+}
+.wb-rich-card .rc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.wb-rich-card .rc-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.wb-rich-card .rc-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1e293b;
+}
+.wb-rich-card .rc-subtitle {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.wb-rich-card .rc-body {
+  font-size: 0.82rem;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.wb-rich-card .rc-price {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+.wb-rich-card .rc-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+.wb-rich-card .rc-feature-tag {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 50px;
+}
+.wb-rich-card .rc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.wb-rich-card .rc-btn:hover {
+  background: #1e40af;
+  transform: translateY(-1px);
+}
+
+/* Quick Reply Suggestions */
+.wb-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0 8px;
+}
+.wb-quick-reply-btn {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 5px 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.wb-quick-reply-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+/* Proactive Trigger Banner */
+.wb-proactive-banner {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: wbSlideUp 0.3s ease;
+  cursor: pointer;
+}
+.wb-proactive-banner:hover {
+  opacity: 0.95;
+}
+.wb-proactive-banner .pb-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.wb-proactive-banner .pb-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.wb-proactive-banner .pb-close {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.65rem;
+}
+
+/* Ad Banner */
+.wb-ad-banner {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  font-size: 0.82rem;
+  color: #92400e;
+  font-weight: 500;
+}
+.wb-ad-banner strong {
+  color: #78350f;
+}
+
+/* Sentiment indicator */
+.wb-sentiment-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 4px;
+}
+.wb-sentiment-positive { background: #22c55e; }
+.wb-sentiment-neutral { background: #94a3b8; }
+.wb-sentiment-negative { background: #ef4444; }
+
+@keyframes wbSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
 <script>
@@ -1298,6 +1558,11 @@ if (!function_exists('formatChatMessage')) {
     if (isOpen) {
       chatBox.classList.remove('fade-out');
       chatBox.classList.add('fade-in');
+      // Load proactive triggers on first open
+      if (!window._proactiveLoaded) {
+        window._proactiveLoaded = true;
+        loadProactiveTriggers();
+      }
     } else {
       chatBox.classList.remove('fade-in');
       chatBox.classList.add('fade-out');
@@ -1337,13 +1602,17 @@ if (!function_exists('formatChatMessage')) {
   function updateInputButtons() {
     const hasText = inputBox.value.trim().length > 0;
     const hasFile = attachedFile !== null;
+    const callBtn = document.getElementById('callBtn');
+    const callBtnWrap = callBtn ? callBtn.closest('.chat-option-btnts') : null;
     
     if (hasText || hasFile) {
       sendBtn.style.display = 'block';
       if (voiceBtn) voiceBtn.style.display = 'none';
+      if (callBtnWrap) callBtnWrap.style.display = 'none';
     } else {
       sendBtn.style.display = 'none';
       if (voiceBtn) voiceBtn.style.display = 'block';
+      if (callBtnWrap) callBtnWrap.style.display = 'block';
     }
   }
 
@@ -1384,6 +1653,26 @@ if (!function_exists('formatChatMessage')) {
     escaped = escaped.replace(/### (.*?)\n/g, '<h6 class="fw-bold my-2" style="color:#0A2D5E;">$1</h6>');
     escaped = escaped.replace(/## (.*?)\n/g, '<h5 class="fw-bold my-2" style="color:#0A2D5E;">$1</h5>');
     escaped = escaped.replace(/# (.*?)\n/g, '<h4 class="fw-bold my-2" style="color:#0A2D5E;">$1</h4>');
+
+    // Parse Markdown Images: ![alt](url)
+    escaped = escaped.replace(
+        /!\[(.*?)\]\((.*?)\)/g,
+        (match, alt, path) => {
+            const fullPath = path.startsWith('http') ? path : pathToRoot + path;
+            return `<br><img src="${fullPath}" style="max-width:100%; max-height:220px; border-radius:8px; margin-top:6px; box-shadow:0 2px 6px rgba(0,0,0,0.15);" alt="${alt}" />`;
+        }
+    );
+
+    // Parse Markdown Links: [text](url)
+    escaped = escaped.replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        (match, text, path) => {
+            // Decode &amp; to & if present in raw URL matching
+            const pathClean = path.replace(/&amp;/g, '&');
+            const fullPath = pathClean.startsWith('http') ? pathClean : pathToRoot + pathClean;
+            return `<a href="${fullPath}" target="_blank" style="color:#ff6600; font-weight:600; text-decoration:underline;">${text}</a>`;
+        }
+    );
 
     // Parse [Attached Image: PATH]
     escaped = escaped.replace(
@@ -1426,10 +1715,9 @@ if (!function_exists('formatChatMessage')) {
     
     const userWrapper = document.createElement('div');
     userWrapper.className = 'bubble-wrapper user';
-    userWrapper.style.animation = 'fadeIn 0.3s ease';
     userWrapper.innerHTML = `
       <div class="bubble user">${displayParts.join('')}</div>
-      <div class="msg-time">${timeStr}</div>
+      <div class="msg-time">${timeStr} <i class="fas fa-check-double" style="font-size:0.6rem;"></i></div>
     `;
     bodyBox.appendChild(userWrapper);
     bodyBox.scrollTop = bodyBox.scrollHeight;
@@ -1445,13 +1733,77 @@ if (!function_exists('formatChatMessage')) {
   }
 
   function appendMessage(type, msg) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `bubble-wrapper ${type}`;
+    
     const bubble = document.createElement('div');
     bubble.className = `bubble ${type}`;
     bubble.innerHTML = formatMessageText(msg);
-    bubble.style.animation = 'fadeIn 0.3s ease';
-    bodyBox.appendChild(bubble);
+    wrapper.appendChild(bubble);
+    
+    // Add timestamp
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    time.innerHTML = type === 'user' ? `${timeStr} <i class="fas fa-check-double" style="font-size:0.6rem;color:rgba(255,255,255,0.5);"></i>` : timeStr;
+    wrapper.appendChild(time);
+    
+    bodyBox.appendChild(wrapper);
+
+    // Process rich cards
+    bubble.querySelectorAll('.wb-rich-card[data-card]').forEach(card => {
+      try {
+        const data = JSON.parse(card.dataset.card);
+        let html = '';
+        const iconBg = data.type === 'quote' ? '#0f172a' : data.type === 'portfolio' ? '#1e40af' : data.type === 'invoice' ? '#047857' : '#7c3aed';
+        const iconClass = data.type === 'quote' ? 'fas fa-calculator' : data.type === 'portfolio' ? 'fas fa-image' : data.type === 'invoice' ? 'fas fa-file-invoice' : 'fas fa-user';
+        html += `<div class="rc-header"><div class="rc-icon" style="background:${iconBg}"><i class="${iconClass}"></i></div><div><div class="rc-title">${escH(data.title || data.name || '')}</div><div class="rc-subtitle">${escH(data.tier || data.designation || data.status || data.type || '')}</div></div></div>`;
+        if (data.description) html += `<div class="rc-body">${escH(data.description)}</div>`;
+        if (data.price) html += `<div class="rc-price">${escH(data.price)}</div>`;
+        if (data.features) {
+          const feats = data.features.split(',').map(f => f.trim());
+          html += `<div class="rc-features">${feats.map(f => `<span class="rc-feature-tag">${escH(f)}</span>`).join('')}</div>`;
+        }
+        if (data.image) html += `<img src="${escH(data.image)}" style="width:100%;border-radius:8px;margin:6px 0;" alt="">`;
+        if (data.link) html += `<a href="${escH(data.link)}" target="_blank" class="rc-btn"><i class="fas fa-external-link-alt"></i> View Details</a>`;
+        if (data.amount) html += `<div style="margin-top:6px;font-size:0.9rem;font-weight:700;color:#0f172a;">Amount: ${escH(data.amount)}</div>`;
+        card.innerHTML = html;
+      } catch(e) { card.style.display = 'none'; }
+    });
+
+    // Process quick replies
+    bubble.querySelectorAll('.wb-quick-reply-suggestions[data-options]').forEach(el => {
+      try {
+        const options = JSON.parse(el.dataset.options);
+        const wrap = document.createElement('div');
+        wrap.className = 'wb-quick-replies';
+        options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'wb-quick-reply-btn';
+          btn.textContent = opt;
+          btn.onclick = () => {
+            wrap.remove();
+            handleUserInput(opt);
+          };
+          wrap.appendChild(btn);
+        });
+        el.replaceWith(wrap);
+      } catch(e) { el.style.display = 'none'; }
+    });
+
+    // Process ad banners
+    bubble.querySelectorAll('.wb-ad-banner[data-ad]').forEach(el => {
+      try {
+        const ad = JSON.parse(el.dataset.ad);
+        el.innerHTML = `<strong>🎯 Recommended for you:</strong> ${escH(ad.content)}`;
+      } catch(e) { el.style.display = 'none'; }
+    });
+
     bodyBox.scrollTop = bodyBox.scrollHeight;
   }
+
+  function escH(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
   function simulateBotReply(userMsg, fileObj) {
     const typing = document.createElement('div');
@@ -1602,6 +1954,50 @@ if (!function_exists('formatChatMessage')) {
         setTimeout(() => { inputBox.focus(); }, 300);
       }
 
+      // Handle CREATE_TICKET command from bot
+      if (replyText.includes('[CREATE_TICKET:')) {
+        const ticketMatch = replyText.match(/\[CREATE_TICKET:(\{.*?\})\]/);
+        if (ticketMatch) {
+          replyText = replyText.replace(/\[CREATE_TICKET:(\{.*?\})\]/, '');
+          try {
+            const ticketData = JSON.parse(ticketMatch[1]);
+            const fd = new URLSearchParams();
+            fd.append('subject', ticketData.subject || 'Support Ticket');
+            fd.append('description', ticketData.message || ticketData.description || 'Created via chatbot');
+            fd.append('category', ticketData.category || 'general');
+            fd.append('priority', ticketData.priority || 'medium');
+            fd.append('origin', 'chatbot');
+            fd.append('message', ticketData.message || '');
+
+            fetch(pathToRoot + 'api/ticket_api.php?action=create_ticket', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: fd.toString()
+            })
+            .then(r => r.json())
+            .then(resData => {
+              if (resData.success) {
+                appendBotMessage('🎟️ Support Ticket <strong>#' + resData.ticket_number + '</strong> has been created successfully! You are now connected to the Support Queue. An agent will join you shortly.');
+                supportTicketId = resData.ticket_id;
+                supportTicketNumber = resData.ticket_number;
+                setTimeout(() => {
+                  enterSupportMode({ id: resData.ticket_id, ticket_number: resData.ticket_number, status: 'waiting' });
+                  showSupportButton();
+                  startPollingForAgent();
+                }, 1500);
+              } else {
+                appendBotMessage('❌ Failed to create support ticket: ' + (resData.error || 'Unknown error'));
+              }
+            })
+            .catch(() => {
+              appendBotMessage('❌ System error occurred while creating support ticket.');
+            });
+          } catch(e) {
+            console.error('JSON parse error in ticket creation command:', e);
+          }
+        }
+      }
+
       // Check for auto-handoff trigger
       if (replyText.indexOf('[TRIGGER_HANDOFF]') !== -1) {
         replyText = replyText.replace('[TRIGGER_HANDOFF]', '');
@@ -1625,6 +2021,31 @@ if (!function_exists('formatChatMessage')) {
     inputBox.value = text;
     inputBox.dispatchEvent(new Event('input'));
     sendMessage();
+  }
+
+  function loadProactiveTriggers() {
+    const page = window.location.pathname.split('/').pop() || 'index.php';
+    fetch('<?= $_botWebPath ?>api/proactive_triggers.php?page=' + encodeURIComponent(page))
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.triggers && data.triggers.length > 0) {
+          data.triggers.forEach(trigger => {
+            setTimeout(() => {
+              const banner = document.createElement('div');
+              banner.className = 'wb-proactive-banner';
+              banner.innerHTML = `<div class="pb-icon"><i class="fas fa-magic"></i></div><div class="pb-text">${trigger.message}</div><button class="pb-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+              banner.onclick = (e) => {
+                if (e.target.closest('.pb-close')) return;
+                banner.remove();
+                handleUserInput(trigger.message);
+              };
+              bodyBox.appendChild(banner);
+              bodyBox.scrollTop = bodyBox.scrollHeight;
+            }, (trigger.delay_seconds || 3) * 1000);
+          });
+        }
+      })
+      .catch(() => {});
   }
 
   function sendAuthQuick(type) {
@@ -2315,11 +2736,17 @@ if (!function_exists('formatChatMessage')) {
   }
 
   function appendBotMessage(text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'bubble-wrapper bot';
     const bubble = document.createElement('div');
     bubble.className = 'bubble bot';
     bubble.innerHTML = text;
-    bubble.style.animation = 'fadeIn 0.3s ease';
-    bodyBox.appendChild(bubble);
+    wrapper.appendChild(bubble);
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    wrapper.appendChild(time);
+    bodyBox.appendChild(wrapper);
     bodyBox.scrollTop = bodyBox.scrollHeight;
   }
 
@@ -2562,11 +2989,17 @@ if (!function_exists('formatChatMessage')) {
               if (data.success) {
                 // Show user's transcribed text
                 if (data.user_text) {
+                  const userWrapper = document.createElement('div');
+                  userWrapper.className = 'bubble-wrapper user';
                   const userBubble = document.createElement('div');
                   userBubble.className = 'bubble user';
-                  userBubble.innerHTML = '<span style="font-size:0.7rem;color:#999;"><i class="fas fa-microphone"></i> Voice</span><br>' + formatMessageText(data.user_text);
-                  userBubble.style.animation = 'fadeIn 0.3s ease';
-                  bodyBox.appendChild(userBubble);
+                  userBubble.innerHTML = '<span style="font-size:0.7rem;opacity:0.7;"><i class="fas fa-microphone"></i> Voice</span><br>' + formatMessageText(data.user_text);
+                  userWrapper.appendChild(userBubble);
+                  const timeEl = document.createElement('div');
+                  timeEl.className = 'msg-time';
+                  timeEl.innerHTML = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' <i class="fas fa-check-double" style="font-size:0.6rem;"></i>';
+                  userWrapper.appendChild(timeEl);
+                  bodyBox.appendChild(userWrapper);
                   bodyBox.scrollTop = bodyBox.scrollHeight;
                 }
 

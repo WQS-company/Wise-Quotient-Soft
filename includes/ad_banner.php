@@ -215,7 +215,13 @@ $total = count($bannerAds);
             <div class="tech-badge"><span class="badge-dot"></span> Promotional</div>
             <h2><?= htmlspecialchars($ad['headline']) ?> <?php if ($ad['subtitle']): ?><span class="highlight">— <?= htmlspecialchars($ad['subtitle']) ?></span><?php endif; ?></h2>
             <?php if ($ad['description']): ?><p><?= htmlspecialchars($ad['description']) ?></p><?php endif; ?>
-            <a href="<?= htmlspecialchars($ad['button_url'] ?: '#') ?>" class="tech-cta" style="background:linear-gradient(135deg,<?= $ad['primary_color'] ?>,<?= $ad['secondary_color'] ?>);" onclick="trackBannerClick(<?= $ad['id'] ?>)"><?= htmlspecialchars($ad['button_text'] ?: 'Learn More') ?> <i class="fas fa-arrow-right"></i></a>
+            <?php
+            $ad_button_url = $ad['button_url'] ?: '#';
+            if ($ad_button_url !== '#' && !preg_match('/^(https?:\/\/|mailto:|tel:|\/|#)/i', $ad_button_url)) {
+                $ad_button_url = (isset($path_to_root) ? $path_to_root : './') . $ad_button_url;
+            }
+            ?>
+            <a href="<?= htmlspecialchars($ad_button_url) ?>" class="tech-cta" style="background:linear-gradient(135deg,<?= $ad['primary_color'] ?>,<?= $ad['secondary_color'] ?>);" onclick="trackBannerClick(<?= $ad['id'] ?>)"><?= htmlspecialchars($ad['button_text'] ?: 'Learn More') ?> <i class="fas fa-arrow-right"></i></a>
         </div>
         <?php endif; ?>
     </div>

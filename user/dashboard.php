@@ -110,6 +110,20 @@ if ($result) {
 }
 $stmt->close();
 
+// === Fetch Scholarship Applications for Candidate ===
+$myScholarshipApplications = [];
+try {
+    $schStmt = $pdo->prepare("
+        SELECT sa.*, s.title AS scholarship_title, s.closing_date 
+        FROM scholarship_applications sa 
+        JOIN scholarships s ON sa.scholarship_id = s.id 
+        WHERE sa.user_id = ? 
+        ORDER BY sa.submitted_at DESC
+    ");
+    $schStmt->execute([$user_id]);
+    $myScholarshipApplications = $schStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+
 // === Fetch Referral Stats for Agents ===
 $agentEarningsUSD = 0.0;
 $agentEarningsNGN = 0.0;
@@ -1001,6 +1015,54 @@ $completedProjStmt->close();
     </div>
     <?php endif; ?>
 </div>
+
+<!-- ===== MY SCHOLARSHIPS ===== -->
+<?php if (!empty($myScholarshipApplications)): ?>
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold text-body mb-0" style="font-size:1.05rem;"><i class="fas fa-graduation-cap me-2" style="color:#0d47a1;"></i>My Scholarship Applications</h5>
+        <span class="badge rounded-pill bg-primary" style="font-size:0.75rem;"><?= count($myScholarshipApplications) ?> Applied</span>
+    </div>
+    <div class="row g-3">
+        <?php foreach ($myScholarshipApplications as $app):
+            $statusColors = [
+                'submitted' => ['bg' => '#eff6ff', 'fg' => '#1d4ed8', 'label' => 'Submitted'],
+                'under_review' => ['bg' => '#fef3c7', 'fg' => '#b45309', 'label' => 'Under Review'],
+                'shortlisted' => ['bg' => '#f5f3ff', 'fg' => '#6d28d9', 'label' => 'Shortlisted'],
+                'approved' => ['bg' => '#dcfce7', 'fg' => '#15803d', 'label' => 'Approved / Awarded'],
+                'rejected' => ['bg' => '#fee2e2', 'fg' => '#991b1b', 'label' => 'Rejected']
+            ];
+            $sc = $statusColors[$app['status']] ?? $statusColors['submitted'];
+        ?>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="project-card h-100" style="border-left: 4px solid <?= $sc['fg'] ?>;">
+                <span class="proj-status" style="background:<?= $sc['bg'] ?>;color:<?= $sc['fg'] ?>;"><?= $sc['label'] ?></span>
+                <h6 class="fw-bold text-body mb-2" style="font-size:0.95rem;padding-right:85px;"><?= htmlspecialchars($app['scholarship_title']) ?></h6>
+                <div style="font-size:0.75rem;color:#6b7280;margin-bottom:0.5rem;">
+                    <strong>Application Code:</strong> <?= htmlspecialchars($app['application_code']) ?>
+                </div>
+                <?php if (!empty($app['cgpa'])): ?>
+                <div style="font-size:0.75rem;color:#6b7280;margin-bottom:0.5rem;">
+                    <strong>Academic CGPA:</strong> <?= htmlspecialchars($app['cgpa']) ?>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($app['admin_notes'])): ?>
+                <div class="mt-2 p-2 bg-light rounded" style="font-size:0.75rem;color:#4b5563;border-left:2px solid #cbd5e1;">
+                    <i class="fas fa-comment-alt me-1 text-muted"></i><strong>WQS Update:</strong> <?= htmlspecialchars($app['admin_notes']) ?>
+                </div>
+                <?php endif; ?>
+                <div class="mt-3 pt-2 d-flex justify-content-between align-items-center" style="border-top:1px solid #f1f5f9;font-size:0.72rem;color:#9ca3af;">
+                    <span><i class="fas fa-calendar-alt me-1"></i>Applied: <?= date('M j, Y', strtotime($app['submitted_at'])) ?></span>
+                    <?php if (!empty($app['closing_date'])): ?>
+                    <span>Deadline: <?= date('M j', strtotime($app['closing_date'])) ?></span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- ===== BILLING & INVOICES ===== -->
 <div class="row g-4 mb-4">

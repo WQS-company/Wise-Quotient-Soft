@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (in_array($action, ['create', 'edit'])) {
         $id = $action === 'edit' ? (int)$_POST['id'] : null;
         $title = trim($_POST['title'] ?? '');
+        $category = trim($_POST['category'] ?? 'Software');
         $description = trim($_POST['description'] ?? '');
         $features = trim($_POST['features'] ?? '');
         $time_limit = trim($_POST['time_limit'] ?? 'Lifetime Access');
@@ -46,12 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($title && $description) {
             try {
                 if ($action === 'create') {
-                    $stmt = $pdo->prepare("INSERT INTO free_packages (title, description, features, time_limit, access_link, image_path, is_active) VALUES (?,?,?,?,?,?,?)");
-                    $stmt->execute([$title, $description, $features, $time_limit, $access_link, $image_path, $is_active]);
+                    $stmt = $pdo->prepare("INSERT INTO free_packages (title, category, description, features, time_limit, access_link, image_path, is_active) VALUES (?,?,?,?,?,?,?,?)");
+                    $stmt->execute([$title, $category, $description, $features, $time_limit, $access_link, $image_path, $is_active]);
                     $_SESSION['success_message'] = 'Package created successfully!';
                 } else {
-                    $stmt = $pdo->prepare("UPDATE free_packages SET title=?, description=?, features=?, time_limit=?, access_link=?, image_path=?, is_active=? WHERE id=?");
-                    $stmt->execute([$title, $description, $features, $time_limit, $access_link, $image_path, $is_active, $id]);
+                    $stmt = $pdo->prepare("UPDATE free_packages SET title=?, category=?, description=?, features=?, time_limit=?, access_link=?, image_path=?, is_active=? WHERE id=?");
+                    $stmt->execute([$title, $category, $description, $features, $time_limit, $access_link, $image_path, $is_active, $id]);
                     $_SESSION['success_message'] = 'Package updated successfully!';
                 }
             } catch (Exception $e) {
@@ -243,6 +244,23 @@ textarea.premium-input {
                         <input type="text" name="title" class="premium-input" required placeholder="e.g. Starter Enterprise AI" value="<?= htmlspecialchars($editingPkg['title'] ?? '') ?>">
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <label class="premium-label">Category <span class="text-danger">*</span></label>
+                    <div class="premium-input-group">
+                        <i class="fas fa-tags"></i>
+                        <select name="category" class="premium-input" required style="appearance: auto; -moz-appearance: auto; -webkit-appearance: auto;">
+                            <?php
+                            $categories = ['Software', 'Web Templates', 'Mobile Apps', 'eBooks & Guides', 'API Services', 'Other'];
+                            $currentCat = $editingPkg['category'] ?? 'Software';
+                            foreach ($categories as $cat) {
+                                $selected = (strtolower($currentCat) === strtolower($cat)) ? 'selected' : '';
+                                echo "<option value=\"" . htmlspecialchars($cat) . "\" $selected>" . htmlspecialchars($cat) . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
                 
                 <div class="col-md-6">
                     <label class="premium-label">Expiry Date / Time Limit</label>
@@ -315,6 +333,7 @@ textarea.premium-input {
                     <tr>
                         <th class="py-3 px-4 text-uppercase text-secondary" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Image</th>
                         <th class="py-3 px-4 text-uppercase text-secondary" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Title</th>
+                        <th class="py-3 px-4 text-uppercase text-secondary" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Category</th>
                         <th class="py-3 px-4 text-uppercase text-secondary" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Time Limit</th>
                         <th class="py-3 px-4 text-uppercase text-secondary" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Status</th>
                         <th class="py-3 px-4 text-uppercase text-secondary text-end" style="font-size:.7rem;letter-spacing:.5px;font-weight:700">Actions</th>
@@ -331,6 +350,7 @@ textarea.premium-input {
                             <?php endif; ?>
                         </td>
                         <td class="px-4 align-middle fw-semibold text-dark"><?= htmlspecialchars($pkg['title']) ?></td>
+                        <td class="px-4 align-middle"><span class="badge bg-secondary text-light" style="font-size:.75rem;padding:4px 10px;border-radius:4px"><?= htmlspecialchars($pkg['category'] ?? 'Software') ?></span></td>
                         <td class="px-4 align-middle"><span class="badge" style="background:#e0e7ff;color:#4f46e5"><?= htmlspecialchars($pkg['time_limit']) ?></span></td>
                         <td class="px-4 align-middle">
                             <form method="POST" style="display:inline">

@@ -378,7 +378,13 @@ try {
                         <?php endif; ?>
 
                         <div class="wqs-ad-actions">
-                            <a href="<?= htmlspecialchars($currentAd['button_url']) ?>" class="wqs-ad-cta" id="wqsAdCta"
+                            <?php
+                            $ad_system_btn_url = $currentAd['button_url'] ?: '#';
+                            if ($ad_system_btn_url !== '#' && !preg_match('/^(https?:\/\/|mailto:|tel:|\/|#)/i', $ad_system_btn_url)) {
+                                $ad_system_btn_url = (isset($path_to_root) ? $path_to_root : './') . $ad_system_btn_url;
+                            }
+                            ?>
+                            <a href="<?= htmlspecialchars($ad_system_btn_url) ?>" class="wqs-ad-cta" id="wqsAdCta"
                                style="background: linear-gradient(135deg, <?= $currentAd['primary_color'] ?>, <?= $currentAd['secondary_color'] ?>);"
                                onclick="trackAdClick(<?= $currentAd['id'] ?>)">
                                 <?= htmlspecialchars($currentAd['button_text']) ?>

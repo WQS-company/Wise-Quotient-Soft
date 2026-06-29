@@ -155,7 +155,11 @@ if (strpos($popupScript, '/admin/') !== false) {
         }
         html += '<div class="wqs-float-popup-actions">';
         if (popup.button_text && popup.button_url) {
-            html += '<a href="' + popup.button_url + '" class="wqs-float-popup-btn" target="_blank" rel="noopener">' + popup.button_text + '</a>';
+            var buttonUrl = popup.button_url;
+            if (buttonUrl && buttonUrl !== '#' && !/^(https?:\/\/|mailto:|tel:|\/|#)/i.test(buttonUrl)) {
+                buttonUrl = _popupPath + buttonUrl;
+            }
+            html += '<a href="' + buttonUrl + '" class="wqs-float-popup-btn" target="_blank" rel="noopener">' + popup.button_text + '</a>';
         }
         html += '<button class="wqs-float-popup-btn-cancel" type="button">Cancel</button>';
         html += '</div>';

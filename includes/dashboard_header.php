@@ -156,7 +156,23 @@ if (isset($page_permission_map[$current_page])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= isset($page_title) ? htmlspecialchars($page_title) : 'Dashboard' ?> - Wise Quotient Soft</title>
-  
+
+  <!-- Customizer Pre-render Configuration -->
+  <script>
+    (function() {
+      const mode = localStorage.getItem('wqs_sidebar_mode') || 'list';
+      const sbTheme = localStorage.getItem('wqs_sidebar_theme') || 'dark-blue';
+      const hdrAlign = localStorage.getItem('wqs_header_align') || 'default';
+      const hdrTheme = localStorage.getItem('wqs_header_theme') || 'glass';
+
+      const html = document.documentElement;
+      if (mode === 'icons') html.classList.add('sidebar-icons-only');
+      html.classList.add('sb-theme-' + sbTheme);
+      html.classList.add('hdr-align-' + hdrAlign);
+      html.classList.add('hdr-theme-' + hdrTheme);
+    })();
+  </script>
+
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- FontAwesome 6 Icons -->
@@ -164,13 +180,66 @@ if (isset($page_permission_map[$current_page])) {
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Premium Custom Styling -->
-  <link href="<?= $path_to_root ?>includes/theme.css?v=3" rel="stylesheet">
+  <link href="<?= $path_to_root ?>includes/theme.css?v=4" rel="stylesheet">
   <style>
     /* Force bottom nav hidden on desktop with inline style */
     @media (min-width: 576px) {
       .bottom-nav {
         display: none !important;
       }
+    }
+
+    /* Premium Sidebar Search Styling */
+    .sidebar-search-group {
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+      border: 1px solid var(--color-border) !important;
+      background-color: var(--color-bg) !important;
+      border-radius: 12px !important;
+      padding: 2px 4px 2px 12px !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      height: 38px !important;
+    }
+    .sidebar-search-group:hover {
+      border-color: #cbd5e1 !important;
+    }
+    [data-bs-theme="dark"] .sidebar-search-group:hover {
+      border-color: #475569 !important;
+    }
+    .sidebar-search-group:focus-within {
+      border-color: var(--color-primary) !important;
+      background-color: var(--color-card-bg) !important;
+      box-shadow: 0 0 0 3px rgba(10, 45, 94, 0.08) !important;
+    }
+    .sidebar-search-icon-wrapper {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: #94a3b8 !important;
+      font-size: 0.85rem !important;
+      margin-right: 12px !important;
+      transition: color 0.2s ease !important;
+      pointer-events: none !important;
+    }
+    .sidebar-search-group:focus-within .sidebar-search-icon-wrapper {
+      color: var(--color-primary) !important;
+    }
+    .sidebar-search-control {
+      flex: 1 !important;
+      border: none !important;
+      background: transparent !important;
+      padding: 0.4rem 0 !important;
+      font-size: 0.82rem !important;
+      font-weight: 500 !important;
+      color: var(--color-text) !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .sidebar-search-control::placeholder {
+      color: var(--color-text-light) !important;
+      opacity: 0.6 !important;
+      font-weight: 400 !important;
     }
   </style>
   <!-- Firebase Client-Side Scripts -->
@@ -192,11 +261,11 @@ if (isset($page_permission_map[$current_page])) {
     </div>
     
     <div class="px-3 mb-3">
-      <div class="input-group">
-        <span class="input-group-text">
-          <i class="fas fa-search text-muted"></i>
+      <div class="sidebar-search-group">
+        <span class="sidebar-search-icon-wrapper">
+          <i class="fas fa-search"></i>
         </span>
-        <input type="text" id="sidebar-search" class="form-control" placeholder="Search navigation...">
+        <input type="text" id="sidebar-search" class="sidebar-search-control" placeholder="Search navigation...">
       </div>
     </div>
     
@@ -286,13 +355,16 @@ if (isset($page_permission_map[$current_page])) {
         <a href="<?= $path_to_root ?>admin/bot_chats.php" class="nav-link <?= ($current_page === 'bot_chats.php') ? 'active' : '' ?>">
           <i class="fas fa-comments"></i> Bot Chats
         </a>
+        <a href="<?= $path_to_root ?>admin/bot_intelligence.php" class="nav-link <?= ($current_page === 'bot_intelligence.php') ? 'active' : '' ?>">
+          <i class="fas fa-brain"></i> Bot Intelligence
+        </a>
+        <a href="<?= $path_to_root ?>admin/agent_manager.php" class="nav-link <?= ($current_page === 'agent_manager.php') ? 'active' : '' ?>">
+          <i class="fas fa-robot"></i> Agent Manager
+        </a>
         <?php endif; ?>
         <?php if (has_feature_access('admin_users')): ?>
         <a href="<?= $path_to_root ?>admin/manage_users.php" class="nav-link <?= ($current_page === 'manage_users.php') ? 'active' : '' ?>">
           <i class="fas fa-users"></i> Manage Users
-        </a>
-        <a href="<?= $path_to_root ?>admin/manage_team.php" class="nav-link <?= ($current_page === 'manage_team.php') ? 'active' : '' ?>">
-          <i class="fas fa-users-cog"></i> Team Management
         </a>
         <?php endif; ?>
         <?php if (has_feature_access('admin_invoices')): ?>
@@ -320,10 +392,13 @@ if (isset($page_permission_map[$current_page])) {
           <i class="fas fa-gavel"></i> Freelance Admin
         </a>
         <?php endif; ?>
+        <?php if ($user_role === 'admin'): ?>
         <a href="<?= $path_to_root ?>admin/contract_hub.php" class="nav-link <?= ($current_page === 'contract_hub.php' || $current_page === 'create_contract.php' || $current_page === 'view_contract.php') ? 'active' : '' ?>">
           <i class="fas fa-file-contract"></i> Contract Hub
         </a>
+        <?php endif; ?>
 
+        <?php if (has_feature_access('admin_scholarships')): ?>
         <!-- Scholarship Management Section -->
         <div class="nav-link" style="cursor:default; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; padding:0.5rem 1rem 0.25rem !important;">
           <i class="fas fa-graduation-cap me-1" style="font-size:0.7rem;"></i> Scholarship Management
@@ -370,7 +445,9 @@ if (isset($page_permission_map[$current_page])) {
         <a href="<?= $path_to_root ?>admin/scholarship_settings.php" class="nav-link <?= ($current_page === 'scholarship_settings.php') ? 'active' : '' ?>">
           <i class="fas fa-cog"></i> Settings
         </a>
+        <?php endif; ?>
 
+        <?php if (has_feature_access('admin_settings')): ?>
         <!-- Payroll & Finance Section -->
         <div class="nav-link" style="cursor:default; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:#94a3b8; padding:0.5rem 1rem 0.25rem !important;">
           <i class="fas fa-coins me-1" style="font-size:0.7rem;"></i> Payroll & Finance
@@ -402,6 +479,7 @@ if (isset($page_permission_map[$current_page])) {
         <a href="<?= $path_to_root ?>admin/payroll-settings.php" class="nav-link <?= ($current_page === 'payroll-settings.php') ? 'active' : '' ?>" style="padding-left:1.75rem !important;">
           <i class="fas fa-chevron-right" style="font-size:0.55rem;"></i> Payroll Settings
         </a>
+        <?php endif; ?>
         
         <?php if (has_feature_access('admin_settings')): ?>
         <a href="<?= $path_to_root ?>admin/reports.php" class="nav-link <?= ($current_page === 'reports.php') ? 'active' : '' ?>">
@@ -1015,6 +1093,7 @@ if (isset($page_permission_map[$current_page])) {
             <li><a class="dropdown-item py-2" href="<?= $path_to_root ?><?= in_array($user_role, ['admin', 'manager', 'sales', 'support', 'finance', 'ceo', 'secretary']) ? 'admin/dashboard.php' : 'user/dashboard.php' ?>"><i class="fas fa-tachometer-alt me-2 text-muted"></i> Dashboard</a></li>
             <li><a class="dropdown-item py-2" href="<?= $path_to_root ?>user/profile.php"><i class="fas fa-user me-2 text-muted"></i> My Profile</a></li>
             <li><a class="dropdown-item py-2" href="<?= $path_to_root ?>user/profile.php#tab-security"><i class="fas fa-cog me-2 text-muted"></i> Settings</a></li>
+            <li><a class="dropdown-item py-2" href="#" id="openDisplayCustomizer"><i class="fas fa-sliders-h me-2 text-muted"></i> Display Settings</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item py-2 text-danger" href="<?= $path_to_root ?>logout.php"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
           </ul>
@@ -1504,6 +1583,15 @@ if (isset($page_permission_map[$current_page])) {
         }
 
 
+
+        // Keyboard shortcut to focus search input (Ctrl + K or Cmd + K)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                const search = document.getElementById('sidebar-search');
+                if (search) search.focus();
+            }
+        });
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
